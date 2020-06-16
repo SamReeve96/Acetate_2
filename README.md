@@ -1,3 +1,4 @@
+![Acetate 2 logo (Temp)](https://github.com/SamReeve96/Acetate_2/blob/Core/Assets/Acetate2Logo.png?raw=true)
 # Acetate 2
 Annotate the web, but better this time.
 
