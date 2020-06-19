@@ -10,7 +10,7 @@ build() {
 
     #Convert the index page into the popup
     #Can I use a rename function instead of a Mv?
-    mv build/index.html build/popup.html
+    mv build/index.html build/background.html
 }
 
 build
