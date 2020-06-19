@@ -1,5 +1,6 @@
-![Acetate 2 logo (Temp)](https://github.com/SamReeve96/Acetate_2/blob/Core/Assets/Acetate2Logo.png?raw=true)
 # Acetate 2
+
+![Acetate 2 logo (Temp)](https://github.com/SamReeve96/Acetate_2/blob/Core/Assets/Acetate2Logo.png?raw=true)
 Annotate the web, but better this time.
 
 We're back! But this time Acetate is being built from the ground up using new tech, and less trial and error.
@@ -7,7 +8,11 @@ We're back! But this time Acetate is being built from the ground up using new te
 Here's the [original repo](https://github.com/SamReeve96/Acetate), just incase you're feeling nostalgic or curious about how this project started.
 
 ## What is Acetate
+
 Acetate is a browser extension (Currently targeting Chromium browsers for now, get in touch if Firefox or Safari etc. would be something you'd want to help with!) that allows users to markup webpages for several use cases. Acetate connects comments to the element in context.
 
+## Getting setup
 
-
+When you've setup the repository, to build you'll need to run the following command for the build script
+'chmod +x script/build.sh'
+This ensures the build script has the permissions to run.

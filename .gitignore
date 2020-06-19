@@ -177,3 +177,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/node,linux,macos,windows
+
+# Ignore custom rules
+
+# Ignore build files from react app
+Extension/build/
