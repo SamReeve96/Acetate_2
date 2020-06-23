@@ -12,7 +12,3 @@ Here's the [original repo](https://github.com/SamReeve96/Acetate), just incase y
 Acetate is a browser extension (Currently targeting Chromium browsers for now, get in touch if Firefox or Safari etc. would be something you'd want to help with!) that allows users to markup webpages for several use cases. Acetate connects comments to the element in context.
 
 ## Getting setup
-
-When you've setup the repository, to build you'll need to run the following command for the build script
-'chmod +x script/build.sh'
-This ensures the build script has the permissions to run.
