@@ -1,4 +1,4 @@
-# Acetate 2
+# Acetate
 
 <a href="https://snyk.io/test/github/SamReeve96/Acetate_2?targetFile=Extension/package.json"><img src="https://snyk.io/test/github/SamReeve96/Acetate_2/badge.svg?targetFile=Extension/package.json" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/github/SamReeve96/Acetate_2?targetFile=Extension/package.json" style="max-width:100%;"></a>
 
