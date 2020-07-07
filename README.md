@@ -1,8 +1,8 @@
 # Acetate
 
-<a href="https://snyk.io/test/github/SamReeve96/Acetate_2?targetFile=Extension/package.json"><img src="https://snyk.io/test/github/SamReeve96/Acetate_2/badge.svg?targetFile=Extension/package.json" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/github/SamReeve96/Acetate_2?targetFile=Extension/package.json" style="max-width:100%;"></a>
+[![Known Vulnerabilities](https://snyk.io/test/github/SamReeve96/Acetate/badge.svg)](https://snyk.io/test/github/SamReeve96/Acetate)
 
-![Acetate logo ()](https://github.com/SamReeve96/Acetate/blob/Core/Assets/AcetateFull.png?raw=true)
+![Acetate logo](https://github.com/SamReeve96/Acetate/blob/Core/Assets/AcetateFull.png?raw=true)
 Annotate the web, by the element.
 
 Acetate is being re-built from the ground up using new tech, and less trial and error, compared to my Disseration project
