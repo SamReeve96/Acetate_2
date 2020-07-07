@@ -1,6 +1,6 @@
 # Acetate
 
-[![Known Vulnerabilities](https://snyk.io/test/github/SamReeve96/Acetate/badge.svg)](https://snyk.io/test/github/SamReeve96/Acetate)
+![Known Vulnerabilities](https://snyk.io/test/github/SamReeve96/Acetate/badge.svg)
 
 ![Acetate logo](https://github.com/SamReeve96/Acetate/blob/Core/Assets/AcetateFull.png?raw=true)
 Annotate the web, by the element.
