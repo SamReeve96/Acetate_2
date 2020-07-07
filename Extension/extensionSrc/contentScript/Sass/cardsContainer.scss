@@ -1,0 +1,71 @@
+.cardsContainer {
+    background-color: none;
+    font-family: 'roboto', arial;
+    height: 100%;
+    margin: auto;
+    min-height: 100vh;
+    position: absolute;
+    right: -370px;
+    top: 0px;
+    width: 400px;
+    z-index: 9001;
+
+    .annotationCard {
+        background-color: #f3936ecf;
+        color: #ffffff;
+        display: flex;
+        margin-bottom: 5px;
+        max-width: 100%;
+        padding: 5px 25px 5px 30px;
+        transition: all 0.25s ease-in-out;
+        -webkit-transition: all 0.25s ease-in-out;
+        /** Chrome & Safari **/
+        -moz-transition: all 0.25s ease-in-out;
+        /** Firefox **/
+        -o-transition: all 0.25s ease-in-out;
+        /** Opera **/
+    }
+
+    .annotationCard.slideOut,
+    .annotationCard:hover,
+    .annotationCard.edit {
+        transform: translate(-360px, 0);
+        -webkit-transform: translate(-360px, 0);
+        /** Chrome & Safari **/
+        -o-transform: translate(-360px, 0);
+        /** Opera **/
+        -moz-transform: translate(-360px, 0);
+        /** Firefox **/
+    }
+
+    .annotationCard.default,
+    .annotatedElem {
+        background-color: #f3936ecf;
+    }
+
+    .commentTextArea {
+        flex: 4;
+        min-height: 10em;
+        resize: none;
+    }
+
+    .controls {
+        flex: 1;
+        height: 100%;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #containerOptions {
+        margin: auto;
+        width: 80%;
+    }
+
+    #containerOptions>select,
+    #containerOptions>button {
+        display: block;
+        margin: auto;
+    }
+}

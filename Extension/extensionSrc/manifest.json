@@ -1,0 +1,25 @@
+{
+  "name": "Acetate",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["/background/background.js"],
+    "persistent": false
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "css": ["/contentScript/content.css"],
+    "js": [
+      "/contentScript/static/js/2.chunk.js",
+      "/contentScript/static/js/contentScript.js",
+      "/contentScript/static/js/main.chunk.js"]
+  }],
+  "browser_action": {
+    "default_popup": "/popup/popup.html"
+  },
+  "icons": { 
+    "720": "/Assets/AcetateIcon.png" 
+  },
+  "content_security_policy": "script-src 'self' 'sha256-Cl0Cu4CYiUknLweFPydb4DTZiZrpksAW4OfQadCFhWc='; object-src 'self'",
+  "web_accessible_resources": ["/contentScript/cardsContainer.css"]
+}
