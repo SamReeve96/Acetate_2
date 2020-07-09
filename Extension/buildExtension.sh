@@ -12,7 +12,7 @@ cp ./extensionSrc/manifest.json ./extensionBuild/
 
 ## Copy files
 # assets dir
-cp -r ./extensionSrc/assets/ ./extensionBuild/Assets/
+cp -r ./extensionSrc/assets/ ./extensionBuild/assets/
 
 # Popup html
 mkdir ./extensionBuild/popup
@@ -30,8 +30,8 @@ mv ./build ../../extensionBuild/contentScript
 ## Compile Sass
 echo 'Compiling Sass'
 # Content
-sass --no-source-map ./Sass/cardsContainer.scss ../../extensionBuild/contentScript/cardsContainer.css
-sass --no-source-map ./Sass/content.scss ../../extensionBuild/contentScript/content.css
+sass --no-source-map ./sass/cardsContainer.scss ../../extensionBuild/contentScript/cardsContainer.css
+sass --no-source-map ./sass/content.scss ../../extensionBuild/contentScript/content.css
 
 # Popup
 sass --no-source-map ../popup/popup.scss ../../extensionBuild/popup/popup.css

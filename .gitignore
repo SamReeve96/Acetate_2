@@ -180,3 +180,6 @@ $RECYCLE.BIN/
 
 # Ignore custom rules
 Extension/extensionBuild/*
+
+# Just some files used for inspiration, nothing to see here
+LocalAssets/*

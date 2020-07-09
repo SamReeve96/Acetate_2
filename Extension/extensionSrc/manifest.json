@@ -18,7 +18,7 @@
     "default_popup": "/popup/popup.html"
   },
   "icons": { 
-    "720": "/Assets/AcetateIcon.png" 
+    "32": "/assets/AcetateIcon_32.png" 
   },
   "content_security_policy": "script-src 'self' 'sha256-Cl0Cu4CYiUknLweFPydb4DTZiZrpksAW4OfQadCFhWc='; object-src 'self'",
   "web_accessible_resources": ["/contentScript/cardsContainer.css"]
