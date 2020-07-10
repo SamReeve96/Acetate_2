@@ -3,41 +3,48 @@
 #!/bin/bash
 
 ## Clear previous build dir
-echo 'Cleaing directory'
+echo 'Cleaing directory...'
 rm -rf extensionBuild
 mkdir extensionBuild
+echo 'Done!'
 
 # Copy Extension manifest
+echo 'Copying Extension Manifest and Assets...'
 cp ./extensionSrc/manifest.json ./extensionBuild/
 
 ## Copy files
 # assets dir
 cp -r ./extensionSrc/assets/ ./extensionBuild/assets/
+echo 'Done!'
 
 # Popup html
+echo 'Copying Popup Html...'
 mkdir ./extensionBuild/popup
 cp ./extensionSrc/popup/popup.html ./extensionBuild/popup/
+echo 'Done!'
 
 ## Content script
-echo 'Building content script react app'
+echo 'Building content script react app...'
 # run create react app to build the content script
 cd ./extensionSrc/contentScript/
 npm run build
 
 # Move build contents to extension folder
 mv ./build ../../extensionBuild/contentScript
+echo 'Done!'
 
 ## Compile Sass
-echo 'Compiling Sass'
+echo 'Compiling Sass...'
 # Content
 sass --no-source-map ./sass/cardsContainer.scss ../../extensionBuild/contentScript/cardsContainer.css
 sass --no-source-map ./sass/content.scss ../../extensionBuild/contentScript/content.css
 
 # Popup
 sass --no-source-map ../popup/popup.scss ../../extensionBuild/popup/popup.css
+echo 'Done!'
 
 ## Compile typescript
-echo 'Compiling typescript'
+echo 'Compiling typescript...'
 
 # Backgroud
 cd ../background/

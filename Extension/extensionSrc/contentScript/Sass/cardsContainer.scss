@@ -1,71 +1,95 @@
+@import './colours.scss';
+
 .cardsContainer {
-    background-color: none;
-    font-family: 'roboto', arial;
     height: 100%;
     margin: auto;
     min-height: 100vh;
+    padding-top: 10px;
     position: absolute;
-    right: -370px;
+    right: -355px;
     top: 0px;
     width: 400px;
     z-index: 9001;
 
     .annotationCard {
-        background-color: #f3936ecf;
+        background-color: $ace-Yellow;
+        border-radius: 5px;
         color: #ffffff;
         display: flex;
+        filter: opacity(0.5);
         margin-bottom: 5px;
         max-width: 100%;
-        padding: 5px 25px 5px 30px;
+        min-height: 100px;
+        padding: 5px 0px;
         transition: all 0.25s ease-in-out;
-        -webkit-transition: all 0.25s ease-in-out;
         /** Chrome & Safari **/
-        -moz-transition: all 0.25s ease-in-out;
+        -webkit-transition: all 0.25s ease-in-out;
         /** Firefox **/
-        -o-transition: all 0.25s ease-in-out;
+        -moz-transition: all 0.25s ease-in-out;
         /** Opera **/
+        -o-transition: all 0.25s ease-in-out;
+
+        .initials {
+            background-color: rgba(239, 239, 239, 0.3);
+            border-radius: 5px;
+            font-family: sans-serif;
+            font-size: 1em;
+            font-style: italic;
+            height: 1em;
+            padding: 5px;
+            margin: auto 7px;
+            text-align: center;
+        }
+
+        textarea {
+            background-color: white;
+            border-radius: 5px;
+            flex: 6;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 5em;
+            resize: none;
+
+            &:disabled {
+                background-color: $light-glass;
+            }
+        }
+
+        .controls {
+            background-color: $glass;
+            border-radius: 5px;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            list-style: none;
+            margin: 0 .5em;
+            padding: 0;
+            text-align: center;
+            width: 100%;
+
+
+            li {
+                border-radius: 5px;
+                flex: 1;
+
+                &:hover {
+                    background-color: $light-glass;
+                }
+            }
+        }
     }
 
-    .annotationCard.slideOut,
+    .annotationCard.out,
     .annotationCard:hover,
     .annotationCard.edit {
-        transform: translate(-360px, 0);
-        -webkit-transform: translate(-360px, 0);
+        background-color: $ace-Yellow;
+        filter: drop-shadow(0px 3px 5px #000000);
+        filter: opacity(1);
+        transform: translate(-355px, 0);
         /** Chrome & Safari **/
-        -o-transform: translate(-360px, 0);
+        -webkit-transform: translate(-355px, 0);
         /** Opera **/
-        -moz-transform: translate(-360px, 0);
+        -o-transform: translate(-355px, 0);
         /** Firefox **/
-    }
-
-    .annotationCard.default,
-    .annotatedElem {
-        background-color: #f3936ecf;
-    }
-
-    .commentTextArea {
-        flex: 4;
-        min-height: 10em;
-        resize: none;
-    }
-
-    .controls {
-        flex: 1;
-        height: 100%;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    #containerOptions {
-        margin: auto;
-        width: 80%;
-    }
-
-    #containerOptions>select,
-    #containerOptions>button {
-        display: block;
-        margin: auto;
+        -moz-transform: translate(-355px, 0);
     }
 }
