@@ -11,11 +11,11 @@ function CardsContainer(props: any) {
 
     let newAnnotation: annotation = {
         id: annotations.length,
-        comment: 'Blam',
+        comment: Lorum,
         created: Date.now().toString(),
         colour: colourArray[Math.floor(Math.random() * colourArray.length)],
         userProfileURL: '',
-        userInitials: 'RS'
+        userInitials: '??'
     }
 
     function addDummyAnnotation() {
@@ -25,9 +25,9 @@ function CardsContainer(props: any) {
     function handleRemoveAnnotation(annotationId: number) {
         let deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
         if (deleteConfirmed) {
-            var annotationsClone: annotation[] = annotations;
-            var annotationToDeleteIndex = searchObjectArray(annotationsClone, annotationId, 'id')
-            setAnnotations(annotationsClone);
+            //var annotationsClone: annotation[] = annotations;
+            //var annotationToDeleteIndex = searchObjectArray(annotationsClone, annotationId, 'id')
+            //setAnnotations(annotationsClone);
             alert('blam');
         }
     }
@@ -61,6 +61,7 @@ function CardsContainer(props: any) {
 function AnnotationCard(props: any) {
     const annotationData: annotation = props.annotationData;
     const [editMode, setEditMode] = React.useState(false as boolean);
+    const [controlsMenuOpen, setControlsMenuOpen] = React.useState(true as boolean);
 
     return (
         <li
@@ -68,25 +69,39 @@ function AnnotationCard(props: any) {
             style={{ backgroundColor: `${annotationData.colour}` }}
         >
             <div className='userID'>
-                    <CardIdentifier
+                <CardIdentifier
                     userProfileURL={annotationData.userProfileURL}
                     userInitials={annotationData.userInitials}
                 />
             </div>
-            <textarea disabled={!editMode}>
-                {annotationData.id + ' ' + annotationData.comment + ' ' + annotationData.created}
-            </textarea>
-            <ol className='controls'>
-                <li title='Edit' onClick={() => { setEditMode(!editMode) }}>
-                    &#9997;
-                </li>
-                <li title='Delete' onClick={() => { props.removeAnnotation() }}>
-                    &#128465;
-                </li>
-                {/* <li title='Begin Thread (Coming soon!)'>
-                    &#128284;
-                </li> */}
-            </ol>
+            <div className='cardMain'>
+                <div className='cardHeader'>
+                    <div className='cardTitle'>
+                        <p className='username'>User Name</p>
+                        <p className='created'>Created just now</p>
+                    </div>
+                    <div className='controls'>
+                        <p title='Edit' onClick={() => { setEditMode(!editMode) }}>
+                            Edit
+                        </p>
+                        <p title='Delete' onClick={() => { props.removeAnnotation() }}>
+                            Delete
+                        </p>
+                            {/* 
+                            
+                            Will props move this out of this menu? Need to think about it when its working
+                            
+                            <p title='Begin Thread (Coming soon!)'>
+                            &#128284;
+                            </p> */}
+                    </div>
+                </div>
+                <div className='cardBody'>
+                    <textarea disabled={!editMode}>
+                        {annotationData.id + ' ' + annotationData.comment + ' ' + annotationData.created}
+                    </textarea>
+                </div>
+            </div>
         </li>
     )
 }
@@ -123,7 +138,7 @@ function createCardContainer() {
         shadow
     );
 
-    //Import styling for shadow dom
+    // Import styling for shadow dom
     const shadowDiv = shadow.querySelector('#shadowDiv');
     const cardsContainerCssURL = chrome.runtime.getURL('/contentScript/cardsContainer.css');
     fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
@@ -185,5 +200,12 @@ function searchObjectArray(array: any[], searchValue: any, objectAttributeName: 
     return index;
 }
 
+const Lorum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
+nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in 
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla 
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa 
+qui officia deserunt mollit anim id est laborum.`
 
 createCardContainer();

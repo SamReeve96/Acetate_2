@@ -1,5 +1,9 @@
 @import './colours.scss';
 
+p {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 .cardsContainer {
     height: 100%;
     margin: auto;
@@ -17,10 +21,11 @@
         color: #ffffff;
         display: flex;
         filter: opacity(0.5);
+        flex-direction: row;
         margin-bottom: 5px;
         max-width: 100%;
-        min-height: 100px;
-        padding: 5px 0px;
+        min-height: 85px;
+        padding: 5px 5px 5px 0;;
         transition: all 0.25s ease-in-out;
         /** Chrome & Safari **/
         -webkit-transition: all 0.25s ease-in-out;
@@ -29,52 +34,93 @@
         /** Opera **/
         -o-transition: all 0.25s ease-in-out;
 
-        .initials {
-            background-color: rgba(239, 239, 239, 0.3);
-            border-radius: 5px;
-            font-family: sans-serif;
-            font-size: 1em;
-            font-style: italic;
-            height: 1em;
-            padding: 5px;
-            margin: auto 7px;
-            text-align: center;
-        }
+        .userID {
+            flex: 1.2;
 
-        textarea {
-            background-color: white;
-            border-radius: 5px;
-            flex: 6;
-            font-family: Arial, Helvetica, sans-serif;
-            min-height: 5em;
-            resize: none;
-
-            &:disabled {
-                background-color: $light-glass;
+            .initials {
+                background-color: rgba(239, 239, 239, 0.3);
+                border-radius: 5px;
+                font-family: sans-serif;
+                font-size: 1em;
+                font-style: italic;
+                height: 1em;
+                padding: 5px;
+                margin: auto 7px;
+                text-align: center;
             }
         }
 
-        .controls {
-            background-color: $glass;
-            border-radius: 5px;
+        .cardMain {
             display: flex;
-            flex: 1;
+            flex: 9;
             flex-direction: column;
-            list-style: none;
-            margin: 0 .5em;
-            padding: 0;
-            text-align: center;
-            width: 100%;
 
-
-            li {
-                border-radius: 5px;
+            .cardHeader {
+                display: flex;
                 flex: 1;
+                flex-direction: row;
+                margin-bottom: 15px;
 
-                &:hover {
-                    background-color: $light-glass;
+                .cardTitle {
+                    flex: 8;
+
+                    p {
+                        margin: 0;
+                    }
+
+                    .username {
+                        font-weight: bold;
+                    }
+
+                    .created {
+                        font-size: 0.8em;
+                        font-style: italic;
+                    }
+                }
+    
+                .controls {
+                    display: flex;
+                    flex: 1;
+                    list-style: none;
+                    text-align: center;
+                    width: 100%;
+        
+        
+                    p {
+                        border-radius: 5px;
+                        flex: 1;
+                        font-family: Arial, Helvetica, sans-serif;
+                        margin: 0;
+                        padding: 0.5em 1em 0;
+        
+                        &:hover {
+                            background-color: $light-glass;
+                        }
+                    }
                 }
             }
+
+            .cardBody {
+                display: flex;
+                flex: 2;
+            
+                textarea {
+                    background-color: $dark-glass;
+                    border: none;
+                    color: white;
+                    flex: 1;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-weight: 600;
+                    resize: none;
+                    width: 90%;
+        
+                    &:disabled {
+                        
+                        background-color: $transparent;
+                    }
+                }
+            }
+
         }
     }
 
