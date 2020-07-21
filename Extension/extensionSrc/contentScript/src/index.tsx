@@ -64,7 +64,7 @@ function CardsContainer(props: any) {
             <AnnotationCard
                 annotationData={annotation}
                 key={annotation.id}
-                annotationMethods={{ deleteAnnotation}} //, saveAnnotationComment }}
+                annotationMethods={{ deleteAnnotation }}
             />
         )
     })
@@ -79,7 +79,9 @@ function CardsContainer(props: any) {
 }
 
 function AnnotationCard(props: any) {
-    let annotationData: annotation = props.annotationData;
+    const [annotationData, setAnnotationData] = React.useState(props.annotationData);
+    const [annotationComment, setAnnotationComment] = React.useState(props.annotationData.comment);
+
     const deleteAnnotation = (annotationId: number) => props.annotationMethods.deleteAnnotation(annotationId);
     const [editMode, setEditMode] = React.useState(false as boolean);
 
@@ -89,21 +91,14 @@ function AnnotationCard(props: any) {
         return matches.join('');
     }
 
-    function saveChanges(newComment: string) {
-        saveAnnotationComment(newComment);
+    function saveComment(newComment: string) {
+        props.annotationData.comment = newComment;
         setEditMode(false);
-    }
-    
-    function saveAnnotationComment(newComment: string) {
-        let annotationClone = annotationData;
-        annotationClone.comment = newComment;
-
-        annotationData = annotationClone;
     }
 
     return (
         <li
-            className={`annotationCard '${editMode ? 'edit' : ''}`}
+            className={`annotationCard ${editMode ? 'edit' : ''}`}
             style={{ backgroundColor: `${annotationData.colour}` }}
         >
             <div className='userID'>
@@ -122,10 +117,10 @@ function AnnotationCard(props: any) {
                         <p
                             title='Edit'
                             onClick={
-                                () => { editMode ? saveChanges('Need to get the text of the text box, right?') : setEditMode(true) }
+                                () => { editMode ? saveComment(annotationComment) : setEditMode(true) }
                             }
                         >
-                            {editMode ? 'Save' : 'Edit'}
+                            {editMode ? 'Done' : 'Edit'}
                         </p>
                         <p
                             title='Delete'
@@ -145,7 +140,8 @@ function AnnotationCard(props: any) {
                 <div className='cardBody'>
                     <textarea 
                         disabled={!editMode}
-                        value={annotationData.comment}
+                        value={annotationComment}
+                        onChange={e => setAnnotationComment(e.target.value)}
                     />
                 </div>
             </div>
@@ -184,13 +180,13 @@ let emulatedStorageAnnotations: annotation[] = [];
 let colourArray: string[] = ['#6c0097', '#ec922a', '#0ec28c', ''];
 
 // Add a couple fake annotations to the emulated storage
-for (let i: number = 0; i < 20; i++) {
+for (let i: number = 0; i < 10; i++) {
     let newAnnotation: annotation = {
         id: i,
         comment: 'Blam',
         created: new Date(Date.now()),
         colour: colourArray[Math.floor(Math.random() * colourArray.length)],
-        userName: 'Sam J. Reeve',
+        userName: 'Sam Reeve',
         userProfileURL: ''
     }
     emulatedStorageAnnotations.push(newAnnotation);
