@@ -3,3 +3,9 @@
 .annotatedElem {
     background-color: $user-colour;
 }
+
+#shadowContainer {
+    position: static;
+    overflow-x: hidden;
+    z-index: 900001;
+}
