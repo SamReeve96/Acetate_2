@@ -25,6 +25,10 @@ echo 'Done!'
 
 ## Content script
 echo 'Building content script react app...'
+
+## Add linter command here
+## If it fails it should halt - https://stackoverflow.com/questions/40146746/how-to-make-batch-file-stop-when-command-fails
+
 # run create react app to build the content script
 cd ./extensionSrc/contentScript/
 npm run build

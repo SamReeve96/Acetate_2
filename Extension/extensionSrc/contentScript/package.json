@@ -9,8 +9,6 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "@types/chrome": "0.0.117",
-    "@typescript-eslint/eslint-plugin": "^2.34.0",
-    "@typescript-eslint/parser": "^2.34.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^24.9.0",
     "babel-loader": "^8.1.0",
@@ -21,7 +19,6 @@
     "css-loader": "^3.4.2",
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
-    "eslint": "^6.8.0",
     "eslint-config-react-app": "^5.2.1",
     "eslint-loader": "^3.0.3",
     "eslint-plugin-flowtype": "^4.6.0",
@@ -69,7 +66,8 @@
     "build": "GENERATE_SOURCEMAP=false node scripts/build.js",
     "test": "snyk test && node scripts/test.js",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect",
+    "lint": "eslint . --ext .tsx, .ts"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -139,5 +137,10 @@
       "react-app"
     ]
   },
-  "snyk": true
+  "snyk": true,
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "eslint": "^6.8.0"
+  }
 }

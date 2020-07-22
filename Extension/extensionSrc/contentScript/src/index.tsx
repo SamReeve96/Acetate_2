@@ -47,6 +47,12 @@ function CardsContainer(props: any) {
         userName: 'Test Name'
     }
 
+    // Similar to componentDidMount and componentDidUpdate:
+    React.useEffect(() => {
+        // Update the document title using the browser API
+        document.title = `There are: ${annotations.length} annotations`;
+    }, [annotations]);
+
     function addDummyAnnotation() {
         setAnnotations(annotations.concat([newAnnotation]));
     }
@@ -62,8 +68,8 @@ function CardsContainer(props: any) {
     const cards = annotations.map((annotation) => {
         return (
             <AnnotationCard
-                annotationData={annotation}
                 key={annotation.id}
+                annotationData={annotation}
                 annotationMethods={{ deleteAnnotation }}
             />
         )
