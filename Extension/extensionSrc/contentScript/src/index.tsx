@@ -1,17 +1,69 @@
 
-import React from 'react';
+import React, { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
+
+
+// ========================
+// General use functions
+// ========================
+
+// Nullable object checker (For typescript Vs. e.g. Document object)
+function checkNullableObject(nullableObject: any): any {
+    if (nullableObject === null) {
+        console.error('Object was found to be null, it cant be: ', nullableObject);
+    } else {
+        return nullableObject;
+    }
+}
+
+const blamString = `blam blam blam blam blam blam blam blam.
+blam blam blam blam blam blam blam blam.
+blam blam blam blam blam blam blam blam.
+blam blam blam blam blam blam blam blam.
+blam blam blam blam blam blam blam blam.
+blam blam blam blam blam blam blam blam.`
+
+// ========================
+// Acetate Functions
+// ========================
+
+// "Load" Annotations for the react component prop
+type annotation = {
+    id: number;
+    comment: string;
+    created: Date;
+    colour: string;
+    userName: string;
+    userProfileURL: string;
+}
+
+const emulatedStorageAnnotations: annotation[] = [];
+
+const colourArray: string[] = ['#6c0097', '#ec922a', '#0ec28c', ''];
+
+// Add a couple fake annotations to the emulated storage
+for (let i = 0; i < 10; i++) {
+    const newAnnotation: annotation = {
+        id: i,
+        comment: 'Blam',
+        created: new Date(Date.now()),
+        colour: colourArray[Math.floor(Math.random() * colourArray.length)],
+        userName: 'Sam Reeve',
+        userProfileURL: ''
+    }
+    emulatedStorageAnnotations.push(newAnnotation);
+}
 
 // ========================
 // Acetate Initialisation
 // ========================
 // Create a shadow DOM
-function createCardContainer() {
+function createCardContainer(): void {
     checkNullableObject(document.body.insertAdjacentHTML('afterbegin',
         '<div id="shadowContainer"></div>'
     ));
 
-    const shadowContainer = checkNullableObject(document.querySelector('div#shadowContainer'));
+    const shadowContainer: HTMLElement = checkNullableObject(document.querySelector('div#shadowContainer'));
     const shadow = shadowContainer.attachShadow({ mode: 'open' });
 
     // Render react components inside shadow dom
@@ -23,7 +75,7 @@ function createCardContainer() {
     );
 
     // Import styling for shadow dom
-    const shadowDiv = shadow.querySelector('#shadowDiv');
+    const shadowDiv = checkNullableObject(shadow.querySelector('#shadowDiv'));
     const cardsContainerCssURL = chrome.runtime.getURL('/contentScript/cardsContainer.css');
     fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
         shadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
@@ -35,10 +87,10 @@ function createCardContainer() {
 // React components
 // ========================
 
-function CardsContainer(props: any) {
+function CardsContainer(props: any): ReactElement {
     const [annotations, setAnnotations] = React.useState(props.storageAnnotations as annotation[]);
 
-    let newAnnotation: annotation = {
+    const newAnnotation: annotation = {
         id: annotations.length,
         comment: blamString,
         created: new Date(Date.now()),
@@ -53,14 +105,14 @@ function CardsContainer(props: any) {
         document.title = `There are: ${annotations.length} annotations`;
     }, [annotations]);
 
-    function addDummyAnnotation() {
+    function addDummyAnnotation(): void {
         setAnnotations(annotations.concat([newAnnotation]));
     }
 
-    function deleteAnnotation(annotationId: number) {
-        let deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
+    function deleteAnnotation(annotationId: number): void{
+        const deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
         if (deleteConfirmed) {
-            var annotationsClone: annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
+            const annotationsClone: annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
             setAnnotations(annotationsClone);
         }
     }
@@ -84,20 +136,20 @@ function CardsContainer(props: any) {
     );
 }
 
-function AnnotationCard(props: any) {
+function AnnotationCard(props: any): ReactElement {
     const [annotationData, setAnnotationData] = React.useState(props.annotationData);
     const [annotationComment, setAnnotationComment] = React.useState(props.annotationData.comment);
 
-    const deleteAnnotation = (annotationId: number) => props.annotationMethods.deleteAnnotation(annotationId);
+    const deleteAnnotation = (annotationId: number): void => props.annotationMethods.deleteAnnotation(annotationId);
     const [editMode, setEditMode] = React.useState(false as boolean);
 
-    function extractInitials() {
-        var userName = annotationData.userName;
-        var matches = checkNullableObject(userName.match(/\b(\w)/g));
+    function extractInitials(): string{
+        const userName = annotationData.userName;
+        const matches = checkNullableObject(userName.match(/\b(\w)/g));
         return matches.join('');
     }
 
-    function saveComment(newComment: string) {
+    function saveComment(newComment: string): void {
         props.annotationData.comment = newComment;
         setEditMode(false);
     }
@@ -123,14 +175,14 @@ function AnnotationCard(props: any) {
                         <p
                             title='Edit'
                             onClick={
-                                () => { editMode ? saveComment(annotationComment) : setEditMode(true) }
+                                (): void => { editMode ? saveComment(annotationComment) : setEditMode(true) }
                             }
                         >
                             {editMode ? 'Done' : 'Edit'}
                         </p>
                         <p
                             title='Delete'
-                            onClick={() => { deleteAnnotation(annotationData.id) }}
+                            onClick={(): void => { deleteAnnotation(annotationData.id) }}
                         >
                             Delete
                         </p>
@@ -144,10 +196,10 @@ function AnnotationCard(props: any) {
                     </div>
                 </div>
                 <div className='cardBody'>
-                    <textarea 
+                    <textarea
                         disabled={!editMode}
                         value={annotationComment}
-                        onChange={e => setAnnotationComment(e.target.value)}
+                        onChange={(e): void => setAnnotationComment(e.target.value)}
                     />
                 </div>
             </div>
@@ -155,7 +207,7 @@ function AnnotationCard(props: any) {
     )
 }
 
-function CardIdentifier(props: any) {
+function CardIdentifier(props: any): ReactElement {
     const userProfileURL: string = props.userProfileURL;
     const userInitials: string = props.userInitials;
 
@@ -167,55 +219,8 @@ function CardIdentifier(props: any) {
     }
 }
 
-// ========================
-// Acetate Functions
-// ========================
-
-// "Load" Annotations for the react component prop
-type annotation = {
-    id: number,
-    comment: string,
-    created: Date,
-    colour: string,
-    userName: string,
-    userProfileURL: string
-}
-
-let emulatedStorageAnnotations: annotation[] = [];
-
-let colourArray: string[] = ['#6c0097', '#ec922a', '#0ec28c', ''];
-
-// Add a couple fake annotations to the emulated storage
-for (let i: number = 0; i < 10; i++) {
-    let newAnnotation: annotation = {
-        id: i,
-        comment: 'Blam',
-        created: new Date(Date.now()),
-        colour: colourArray[Math.floor(Math.random() * colourArray.length)],
-        userName: 'Sam Reeve',
-        userProfileURL: ''
-    }
-    emulatedStorageAnnotations.push(newAnnotation);
-}
-
-// ========================
-// General use functions
-// ========================
-
-// Nullable object checker (For typescript Vs. e.g. Document object)
-function checkNullableObject(nullableObject: any) {
-    if (nullableObject === null) {
-        console.error('Object was found to be null, it cant be: ', nullableObject);
-    } else {
-        return nullableObject;
-    }
-}
-
-const blamString = `blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.`
+//------------
+// Begin!
+//------------
 
 createCardContainer();

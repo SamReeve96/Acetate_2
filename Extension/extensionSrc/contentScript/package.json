@@ -67,7 +67,9 @@
     "test": "snyk test && node scripts/test.js",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
-    "lint": "eslint . --ext .tsx, .ts"
+    "lint-tsx": "eslint . --ext .tsx",
+    "lint-tsx-fix": "eslint . --ext .tsx --fix",
+    "lint-ts": "eslint . --ext .ts"
   },
   "eslintConfig": {
     "extends": "react-app"
