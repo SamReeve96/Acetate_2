@@ -1,20 +1,9 @@
 
 import React, { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
-
-
-// ========================
-// General use functions
-// ========================
-
-// Nullable object checker (For typescript Vs. e.g. Document object)
-function checkNullableObject(nullableObject: any): any {
-    if (nullableObject === null) {
-        console.error('Object was found to be null, it cant be: ', nullableObject);
-    } else {
-        return nullableObject;
-    }
-}
+import { annotation} from './customTypes';
+import { checkNullableObject } from './shared';
+import { msgSubjects } from '../../global/messageSubjects';
 
 const blamString = `blam blam blam blam blam blam blam blam.
 blam blam blam blam blam blam blam blam.
@@ -22,20 +11,6 @@ blam blam blam blam blam blam blam blam.
 blam blam blam blam blam blam blam blam.
 blam blam blam blam blam blam blam blam.
 blam blam blam blam blam blam blam blam.`
-
-// ========================
-// Acetate Functions
-// ========================
-
-// "Load" Annotations for the react component prop
-type annotation = {
-    id: number;
-    comment: string;
-    created: Date;
-    colour: string;
-    userName: string;
-    userProfileURL: string;
-}
 
 const emulatedStorageAnnotations: annotation[] = [];
 
@@ -54,11 +29,7 @@ for (let i = 0; i < 10; i++) {
     emulatedStorageAnnotations.push(newAnnotation);
 }
 
-// ========================
-// Acetate Initialisation
-// ========================
-// Create a shadow DOM
-function createCardContainer(): void {
+function initialize(): void {
     checkNullableObject(document.body.insertAdjacentHTML('afterbegin',
         '<div id="shadowContainer"></div>'
     ));
@@ -80,7 +51,6 @@ function createCardContainer(): void {
     fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
         shadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
     });
-
 }
 
 // ========================
@@ -223,4 +193,4 @@ function CardIdentifier(props: any): ReactElement {
 // Begin!
 //------------
 
-createCardContainer();
+initialize();
