@@ -55,29 +55,37 @@ async function getEnums() {
     enums = await fetch(enumURL).then(response => response.json());
 }
 
-function initialize(): void {
-    checkNullableObject(document.body.insertAdjacentHTML('afterbegin',
-        '<div id="shadowContainer"></div>'
-    ));
+function toggleAcetate(Active: boolean): void {
+    if (Active) {
+        // Remove content script contents
+        const shadowContainer = checkNullableObject(document.querySelector('#shadowContainer'));
+        shadowContainer.parentNode.removeChild(shadowContainer);
+    } else {
+        //Add extension elements
+        checkNullableObject(document.body.insertAdjacentHTML('afterbegin',
+            '<div id="shadowContainer"></div>'
+        ));
 
-    const shadowContainer: HTMLElement = checkNullableObject(document.querySelector('div#shadowContainer'));
-    const shadow = shadowContainer.attachShadow({ mode: 'open' });
+        const shadowContainer: HTMLElement = checkNullableObject(document.querySelector('div#shadowContainer'));
+        const shadow = shadowContainer.attachShadow({ mode: 'open' });
 
-    // Render react components inside shadow dom
-    ReactDOM.render(
-        <CardsContainer
-            storageAnnotations={emulatedStorageAnnotations}
-        />,
-        shadow
-    );
+        // Render react components inside shadow dom
+        ReactDOM.render(
+            <CardsContainer
+                storageAnnotations={emulatedStorageAnnotations}
+            />,
+            shadow
+        );
 
-    // Import styling for shadow dom
-    const shadowDiv = checkNullableObject(shadow.querySelector('#shadowDiv'));
-    const cardsContainerCssURL = chrome.runtime.getURL('/contentScript/cardsContainer.css');
-    fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
-        shadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
-    });
+        // Import styling for shadow dom
+        const shadowDiv = checkNullableObject(shadow.querySelector('#shadowDiv'));
+        const cardsContainerCssURL = chrome.runtime.getURL('/contentScript/cardsContainer.css');
+        fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
+            shadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
+        });
+    }
 }
+
 
 // ========================
 // Chrome messaging
@@ -85,15 +93,14 @@ function initialize(): void {
 let csPort: any;
 type extensionMessage = {
     subject: string;
+    attachments: any;
 }
 
 // handle message from backend
 async function handleMessage(message: extensionMessage): Promise<boolean> {
     switch (message.subject) {
-        case enums.chromeMessageSubject.ActivateAcetate:
-            initialize();
-            break;
-        case "DeactivateAcetate":
+        case enums.chromeMessageSubject.toggleAcetate:
+            toggleAcetate(message.attachments.activeState);
             break;
     }
     return true;
@@ -251,5 +258,9 @@ function CardIdentifier(props: any): ReactElement {
         return <p className='initials'>{userInitials}</p>
     }
 }
+
+// ========================
+// Initiate
+// ========================
 
 getEnums().then(() => setupChromeMessaging()).then(() => (sendInitialise()));

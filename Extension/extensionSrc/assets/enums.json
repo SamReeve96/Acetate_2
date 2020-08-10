@@ -1,6 +1,5 @@
 {
   "chromeMessageSubject": {
-    "ActivateAcetate": "ActivateAcetate",
-    "DeactivateAcetate": "DeactivateAcetate"
+    "toggleAcetate": "toggleAcetate"
   }
 }
