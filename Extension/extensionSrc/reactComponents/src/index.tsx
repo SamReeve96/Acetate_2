@@ -1,9 +1,22 @@
+chrome.runtime.onConnect.addListener((port) => {
+    port.onMessage.addListener((msg) => {
+        if (msg.function == 'html') {
+            port.postMessage({
+                html: document.documentElement.outerHTML,
+                title: document.title
+            });
+        }
+    });
+});
 
 import React, { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
-import { annotation} from './customTypes';
+import { annotation } from './customTypes';
 import { checkNullableObject } from './shared';
-import { msgSubjects } from '../../global/messageSubjects';
+
+// ========================
+// Testing
+// ========================
 
 const blamString = `blam blam blam blam blam blam blam blam.
 blam blam blam blam blam blam blam blam.
@@ -27,6 +40,17 @@ for (let i = 0; i < 10; i++) {
         userProfileURL: ''
     }
     emulatedStorageAnnotations.push(newAnnotation);
+}
+
+// ========================
+// General functions
+// ========================
+
+// Get the Enums
+async function getEnums() {
+    const enumURL: string = chrome.runtime.getURL('/assets/enums.json');
+    const enums = await fetch(enumURL).then(response => response.json());
+    return enums;
 }
 
 function initialize(): void {
@@ -54,6 +78,39 @@ function initialize(): void {
 }
 
 // ========================
+// Chrome messaging
+// ========================
+
+function setupChromeMessaging(enums: any) {
+    console.log('setup sees' + enums.chromeMessageSubject.ActivateAcetate);
+    // handle message from backend
+
+    async function handleMessage(message: any): Promise<boolean> {
+        console.log('got a message!');
+        console.log(message);
+        switch (message.type) {
+            case enums.chromeMessageSubject.ActivateAcetate:
+                initialize();
+                break;
+            case "DeactivateAcetate":
+                break;
+        }
+        return true;
+    }
+
+    // Add listener for messages
+    chrome.runtime.onMessage.addListener(async message => {
+        try {
+            await handleMessage(message).then(() => {
+                return true;
+            });
+        } catch (err) {
+            console.error('message error: ' + err.message);
+        }
+    });
+}
+
+// ========================
 // React components
 // ========================
 
@@ -72,14 +129,14 @@ function CardsContainer(props: any): ReactElement {
     // Similar to componentDidMount and componentDidUpdate:
     React.useEffect(() => {
         // Update the document title using the browser API
-        document.title = `There are: ${annotations.length} annotations`;
+        document.title = document.title + ` : (Acetate Active) - ${annotations.length} annotations`;
     }, [annotations]);
 
     function addDummyAnnotation(): void {
         setAnnotations(annotations.concat([newAnnotation]));
     }
 
-    function deleteAnnotation(annotationId: number): void{
+    function deleteAnnotation(annotationId: number): void {
         const deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
         if (deleteConfirmed) {
             const annotationsClone: annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
@@ -113,7 +170,7 @@ function AnnotationCard(props: any): ReactElement {
     const deleteAnnotation = (annotationId: number): void => props.annotationMethods.deleteAnnotation(annotationId);
     const [editMode, setEditMode] = React.useState(false as boolean);
 
-    function extractInitials(): string{
+    function extractInitials(): string {
         const userName = annotationData.userName;
         const matches = checkNullableObject(userName.match(/\b(\w)/g));
         return matches.join('');
@@ -189,8 +246,12 @@ function CardIdentifier(props: any): ReactElement {
     }
 }
 
-//------------
-// Begin!
-//------------
+getEnums().then((enums) => setupChromeMessaging(enums));
 
-initialize();
+const message = {
+    type: "ActivateAcetate"
+}
+
+chrome.runtime.sendMessage(message, response => {
+    return true;
+});

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "esnext",
+    "sourceMap": false,
+    "outDir": "../../extensionBuild/"
+  },
+  "lib": [
+    "esnext"
+  ],
+  "include": [
+    "background",
+    "popup"
+  ],
+  "types": [
+    "chrome"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

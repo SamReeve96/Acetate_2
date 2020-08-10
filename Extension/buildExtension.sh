@@ -8,21 +8,6 @@ rm -rf extensionBuild
 mkdir extensionBuild
 echo 'Done!'
 
-# Copy Extension manifest
-echo 'Copying Extension Manifest and Assets...'
-cp ./extensionSrc/manifest.json ./extensionBuild/
-
-## Copy files
-# assets dir
-cp -r ./extensionSrc/assets/ ./extensionBuild/assets/
-echo 'Done!'
-
-# Popup html
-echo 'Copying Popup Html...'
-mkdir ./extensionBuild/popup
-cp ./extensionSrc/popup/popup.html ./extensionBuild/popup/
-echo 'Done!'
-
 ## Content script
 echo 'Building content script react app...'
 
@@ -30,7 +15,7 @@ echo 'Building content script react app...'
 ## If it fails it should halt - https://stackoverflow.com/questions/40146746/how-to-make-batch-file-stop-when-command-fails
 
 # run create react app to build the content script
-cd ./extensionSrc/contentScript/
+cd ./extensionSrc/reactComponents/
 npm run build
 
 # Move build contents to extension folder
@@ -44,18 +29,30 @@ sass --no-source-map ./sass/cardsContainer.scss ../../extensionBuild/contentScri
 sass --no-source-map ./sass/content.scss ../../extensionBuild/contentScript/content.css
 
 # Popup
-sass --no-source-map ../popup/popup.scss ../../extensionBuild/popup/popup.css
+sass --no-source-map ../nonReactComponents/popup/popup.scss ../../extensionBuild/popup/popup.css
 echo 'Done!'
 
 ## Compile typescript
 echo 'Compiling typescript...'
 
-# Backgroud
-cd ../background/
+cd ../nonReactComponents/
 tsc
 
-# Popup
-cd ../popup/
-tsc
+## Copy files
+cd ../..
 
+# Copy Extension manifest
+echo 'Copying Extension Manifest and Assets...'
+cp ./extensionSrc/manifest.json ./extensionBuild/
+
+# assets dir
+cp -r ./extensionSrc/assets/ ./extensionBuild/assets/
 echo 'Done!'
+
+# Popup html
+echo 'Copying Popup Html...'
+# mkdir ./extensionBuild/popup
+cp ./extensionSrc/nonReactComponents/popup/popup.html ./extensionBuild/popup/
+echo 'Done!'
+
+echo 'build complete!'
