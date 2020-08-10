@@ -1,58 +1,42 @@
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const port = chrome.tabs.connect(tabs[0].id);
-    port.postMessage({ function: 'html' });
-    let blam = {
-        html: '',
-        title: ''
-    };
-    port.onMessage.addListener((response) => {
-        blam.html = response.html;
-        blam.title = response.title;
-    });
-});
-
 // Get the chrome messages Enum
+let enums;
+
 async function getEnums() {
     const enumURL: string = chrome.runtime.getURL('/assets/enums.json');
-    const enums = await fetch(enumURL).then(response => response.json());
-    return enums;
+    enums = await fetch(enumURL).then(response => response.json());
 }
 
-function setupChromeMessaging(enums) {
+// Make this an array of ports so that multiple content scripts can be handled simultaneously
+var activeCSPort: any;
+type extensionMessage = {
+    subject: string
+}
 
-    function handleMessage(message) {
-        console.log('got a message!');
-        console.log(message);
-        switch (message.type) {
-            case enums.chromeMessageSubject.ActivateAcetate:
-                const message = {
-                    type: enums.chromeMessageSubject.ActivateAcetate
-                }
-
-                console.log('sending message:');
-                console.log(message);
-
-                chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-                    chrome.tabs.sendMessage(tabs[0].id, message, null, () => { return true; });
-                });
-                break;
-            case "DeactivateAcetate":
-                alert('blam')
-                break;
-        }
-        return true;
+function handleMessage(message) {
+    switch (message.subject) {
+        case enums.chromeMessageSubject.ActivateAcetate:
+            const message: extensionMessage = {
+                subject: 'ActivateAcetate'
+            }
+            activeCSPort.postMessage(message);
+            break;
     }
-
-    // // Add listener for messages
-    // chrome.runtime.onMessage.addListener(async message => {
-    //     try {
-    //         handleMessage(message);
-    //     } catch (err) {
-    //         console.error('message error: ' + err.message);
-    //     }
-    // });
-
-
+    return true;
 }
 
-getEnums().then((enums) => setupChromeMessaging(enums));
+function setupChromeMessaging() {
+    chrome.runtime.onConnect.addListener(function (newPort: any) {
+        activeCSPort = newPort;
+        activeCSPort.postMessage({
+            subject: 'content script connected'
+        });
+
+        activeCSPort.onMessage.addListener(function (message: extensionMessage) {
+            console.log("Background script received message from content script")
+            console.log(`--- ${message.subject} ---`)
+            handleMessage(message);
+        });
+    });
+}
+
+getEnums().then(() => setupChromeMessaging());

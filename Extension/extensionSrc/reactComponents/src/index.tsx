@@ -47,10 +47,12 @@ for (let i = 0; i < 10; i++) {
 // ========================
 
 // Get the Enums
+
+let enums: any;
+
 async function getEnums() {
     const enumURL: string = chrome.runtime.getURL('/assets/enums.json');
-    const enums = await fetch(enumURL).then(response => response.json());
-    return enums;
+    enums = await fetch(enumURL).then(response => response.json());
 }
 
 function initialize(): void {
@@ -80,34 +82,38 @@ function initialize(): void {
 // ========================
 // Chrome messaging
 // ========================
+let csPort: any;
+type extensionMessage = {
+    subject: string;
+}
 
-function setupChromeMessaging(enums: any) {
-    console.log('setup sees' + enums.chromeMessageSubject.ActivateAcetate);
-    // handle message from backend
-
-    async function handleMessage(message: any): Promise<boolean> {
-        console.log('got a message!');
-        console.log(message);
-        switch (message.type) {
-            case enums.chromeMessageSubject.ActivateAcetate:
-                initialize();
-                break;
-            case "DeactivateAcetate":
-                break;
-        }
-        return true;
+// handle message from backend
+async function handleMessage(message: extensionMessage): Promise<boolean> {
+    switch (message.subject) {
+        case enums.chromeMessageSubject.ActivateAcetate:
+            initialize();
+            break;
+        case "DeactivateAcetate":
+            break;
     }
+    return true;
+}
 
-    // Add listener for messages
-    chrome.runtime.onMessage.addListener(async message => {
-        try {
-            await handleMessage(message).then(() => {
-                return true;
-            });
-        } catch (err) {
-            console.error('message error: ' + err.message);
-        }
+function setupChromeMessaging() {
+    //update to use a UUID or tab name
+    csPort = chrome.runtime.connect({ name: "port-from-cs" })
+
+    csPort.postMessage({ subject: "Opening port from content script" });
+
+    csPort.onMessage.addListener(function (message: extensionMessage) {
+        console.log('Content script received message from background script');
+        console.log(`--- ${message.subject} ---`)
+        handleMessage(message);
     });
+}
+
+function sendInitialise() {
+    csPort.postMessage({ subject: "Send the initialise message (this is a test and will be removed)" });
 }
 
 // ========================
@@ -246,12 +252,4 @@ function CardIdentifier(props: any): ReactElement {
     }
 }
 
-getEnums().then((enums) => setupChromeMessaging(enums));
-
-const message = {
-    type: "ActivateAcetate"
-}
-
-chrome.runtime.sendMessage(message, response => {
-    return true;
-});
+getEnums().then(() => setupChromeMessaging()).then(() => (sendInitialise()));
