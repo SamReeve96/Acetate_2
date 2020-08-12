@@ -1,3 +1,5 @@
+import { extensionMessage } from '../customTypes';
+
 // ========================
 // General functions
 // ========================
@@ -16,19 +18,13 @@ async function getEnums() {
 // Chrome messaging
 // ========================
 
-// @ts-ignore: Complains this has been declared in background but files are separate
-type extensionMessage = {
-    subject: string;
-    attachments: any;
-}
-
 function setupPopupControl() {
     let toggle = document.querySelector('#toggle');
     console.log('blam');
     toggle.addEventListener('click', () => {
         // Send message to backend to change active state
         const message: extensionMessage = {
-            subject: enums.chromeMessageSubject.toggleAcetate,
+            subject: enums.chromeMessageSubject.toggleSheetActiveState,
             attachments: {}
         };
 

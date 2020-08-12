@@ -1,5 +1,9 @@
 {
   "chromeMessageSubject": {
-    "toggleAcetate": "toggleAcetate"
+    "backgroundScriptConnected": "backgroundScriptConnected",
+    "contentScriptConnected": "contentScriptConnected",
+    "sheetToAddOrUpdate": "sheetToAddOrUpdate",
+    "toggleSheetActiveState": "toggleSheetActiveState",
+    "openingPort": "openingPort"
   }
 }

@@ -1,46 +1,32 @@
-chrome.runtime.onConnect.addListener((port) => {
-    port.onMessage.addListener((msg) => {
-        if (msg.function == 'html') {
-            port.postMessage({
-                html: document.documentElement.outerHTML,
-                title: document.title
-            });
-        }
-    });
-});
-
 import React, { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
-import { annotation } from './customTypes';
+import { annotation, extensionMessage, sheet } from './customTypes';
 import { checkNullableObject } from './shared';
+
+const currentOriginAndPath = window.location.origin + window.location.pathname;
+
+const currentSheet: sheet = {
+    id: currentOriginAndPath,
+    active: false,
+    annotations: [],
+    backgroundPort: undefined,
+    csPort: undefined,
+    tabId: -2,
+    url: currentOriginAndPath
+};
 
 // ========================
 // Testing
 // ========================
 
-const blamString = `blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.
-blam blam blam blam blam blam blam blam.`
-
-const emulatedStorageAnnotations: annotation[] = [];
-
-const colourArray: string[] = ['#6c0097', '#ec922a', '#0ec28c', ''];
-
-// Add a couple fake annotations to the emulated storage
-for (let i = 0; i < 10; i++) {
-    const newAnnotation: annotation = {
-        id: i,
-        comment: 'Blam',
-        created: new Date(Date.now()),
-        colour: colourArray[Math.floor(Math.random() * colourArray.length)],
-        userName: 'Sam Reeve',
-        userProfileURL: ''
-    }
-    emulatedStorageAnnotations.push(newAnnotation);
-}
+currentSheet.annotations.push({
+    id: 1,
+    comment: 'blam',
+    created: new Date(Date.now()),
+    colour: '',
+    userName: 'JohnnyAppleseed',
+    userProfileURL: ''
+});
 
 // ========================
 // General functions
@@ -53,10 +39,12 @@ let enums: any;
 async function getEnums() {
     const enumURL: string = chrome.runtime.getURL('/assets/enums.json');
     enums = await fetch(enumURL).then(response => response.json());
+    console.log('enums');
+    console.log(enums);
 }
 
-function toggleAcetate(Active: boolean): void {
-    if (Active) {
+function toggleSheetActiveState(active: boolean): void {
+    if (active) {
         // Remove content script contents
         const shadowContainer = checkNullableObject(document.querySelector('#shadowContainer'));
         shadowContainer.parentNode.removeChild(shadowContainer);
@@ -72,7 +60,7 @@ function toggleAcetate(Active: boolean): void {
         // Render react components inside shadow dom
         ReactDOM.render(
             <CardsContainer
-                storageAnnotations={emulatedStorageAnnotations}
+                storageAnnotations={currentSheet.annotations}
             />,
             shadow
         );
@@ -86,21 +74,38 @@ function toggleAcetate(Active: boolean): void {
     }
 }
 
+// ========================
+// Storage management
+// ========================
+
+// send the sheet to thr background to be added or to update a pre existing sheet in the background state
+function sendSheetToBackground() {
+    currentSheet.csPort.postMessage({
+        subject: enums.chromeMessageSubject.sheetToAddOrUpdate,
+        attachments: {
+            sheet: currentSheet
+        }
+    });
+}
 
 // ========================
 // Chrome messaging
 // ========================
-let csPort: any;
-type extensionMessage = {
-    subject: string;
-    attachments: any;
-}
 
 // handle message from backend
 async function handleMessage(message: extensionMessage): Promise<boolean> {
+    console.log(enums);
     switch (message.subject) {
-        case enums.chromeMessageSubject.toggleAcetate:
-            toggleAcetate(message.attachments.activeState);
+        case enums.chromeMessageSubject.toggleSheetActiveState:
+            console.log('ace change' + message.attachments.activeState);
+            toggleSheetActiveState(message.attachments.activeState);
+            break;
+        case enums.chromeMessageSubject.backgroundScriptConnected:
+            currentSheet.tabId = message.attachments.tabId;
+            sendSheetToBackground();
+            break;
+        default:
+            console.error('invalid Enum for message subject: "' + message.subject + '"');
             break;
     }
     return true;
@@ -108,19 +113,15 @@ async function handleMessage(message: extensionMessage): Promise<boolean> {
 
 function setupChromeMessaging() {
     //update to use a UUID or tab name
-    csPort = chrome.runtime.connect({ name: "port-from-cs" })
+    currentSheet.csPort = chrome.runtime.connect({ name: currentSheet.id })
 
-    csPort.postMessage({ subject: "Opening port from content script" });
+    currentSheet.csPort.postMessage({ subject: enums.chromeMessageSubject.openingPort });
 
-    csPort.onMessage.addListener(function (message: extensionMessage) {
-        console.log('Content script received message from background script');
-        console.log(`--- ${message.subject} ---`)
+    currentSheet.csPort.onMessage.addListener(function (message: extensionMessage) {
+        console.log('');
+        console.log(`Content script received message from background script ${message.subject}`)
         handleMessage(message);
     });
-}
-
-function sendInitialise() {
-    csPort.postMessage({ subject: "Send the initialise message (this is a test and will be removed)" });
 }
 
 // ========================
@@ -132,9 +133,9 @@ function CardsContainer(props: any): ReactElement {
 
     const newAnnotation: annotation = {
         id: annotations.length,
-        comment: blamString,
+        comment: 'test',
         created: new Date(Date.now()),
-        colour: colourArray[Math.floor(Math.random() * colourArray.length)],
+        colour: '',
         userProfileURL: '',
         userName: 'Test Name'
     }
@@ -263,4 +264,4 @@ function CardIdentifier(props: any): ReactElement {
 // Initiate
 // ========================
 
-getEnums().then(() => setupChromeMessaging()).then(() => (sendInitialise()));
+getEnums().then(() => setupChromeMessaging());
