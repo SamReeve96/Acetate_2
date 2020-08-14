@@ -3,7 +3,10 @@
     "backgroundScriptConnected": "backgroundScriptConnected",
     "contentScriptConnected": "contentScriptConnected",
     "sheetToAddOrUpdate": "sheetToAddOrUpdate",
-    "toggleSheetActiveState": "toggleSheetActiveState",
+    "changeSheetState": "changeSheetState",
+    "activateSheet": "activateSheet",
+    "deactivateSheet": "deactivateSheet",
+    "cScriptDeactivated": "cScriptDeactivated",
     "openingPort": "openingPort"
   }
 }

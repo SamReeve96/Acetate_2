@@ -20,11 +20,10 @@ async function getEnums() {
 
 function setupPopupControl() {
     let toggle = document.querySelector('#toggle');
-    console.log('blam');
     toggle.addEventListener('click', () => {
         // Send message to backend to change active state
         const message: extensionMessage = {
-            subject: enums.chromeMessageSubject.toggleSheetActiveState,
+            subject: enums.chromeMessageSubject.changeSheetState,
             attachments: {}
         };
 
