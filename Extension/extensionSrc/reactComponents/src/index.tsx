@@ -104,7 +104,6 @@ function sendSheetToBackground() {
 
 // handle message from backend
 async function handleIncomingMessage(message: cTypes.extensionMessage): Promise<boolean> {
-    console.log(enums);
     switch (message.subject) {
         case enums.chromeMessageSubject.activateSheet:
             activateSheet(message.attachments.sheet);
@@ -138,18 +137,6 @@ function setupChromeMessaging() {
 }
 
 // ========================
-// React
-// ========================
-
-//When reacts state changes, sync those changes with the chrome sheet and the background sheet array
-function syncSheetWithReactAnnotations(annotations: cTypes.annotation[]) {
-    //Set the sheet annotations value to what react sees
-    currentSheet.annotations = annotations;
-    // update background sheet
-    sendSheetToBackground();
-}
-
-// ========================
 // React components
 // ========================
 
@@ -166,19 +153,26 @@ function CardsContainer(props: any): ReactElement {
         userName: 'Test Name'
     }
 
-    // Similar to componentDidMount and componentDidUpdate:
+    //Not triggering correctly right now
     React.useEffect(() => {
         // Update the document title using the browser API
         document.title = document.title + ` : (Acetate Active) - ${annotations.length} annotations`;
-        
-        syncSheetWithReactAnnotations(annotations);
-    }, [annotations]);
+    });
+
+    //When reacts state changes, sync those changes with the chrome sheet and the background sheet array
+    function syncSheetWithReactAnnotations() {
+        //Set the sheet annotations value to what react sees
+        currentSheet.annotations = annotations;
+        // update background sheet
+        sendSheetToBackground();
+    }
 
     function deleteAnnotation(annotationId: number): void {
         const deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
         if (deleteConfirmed) {
             const annotationsClone: cTypes.annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
             setAnnotations(annotationsClone);
+            syncSheetWithReactAnnotations();
         }
     }
 
@@ -187,7 +181,7 @@ function CardsContainer(props: any): ReactElement {
             <AnnotationCard
                 key={annotation.id}
                 annotationData={annotation}
-                annotationMethods={{ deleteAnnotation }}
+                annotationMethods={{ syncSheetWithReactAnnotations, deleteAnnotation }}
             />
         )
     })
@@ -204,7 +198,6 @@ function CardsContainer(props: any): ReactElement {
 function AnnotationCard(props: any): ReactElement {
     const [annotationData, setAnnotationData] = React.useState(props.annotationData);
     const [annotationComment, setAnnotationComment] = React.useState(props.annotationData.comment);
-
     const deleteAnnotation = (annotationId: number): void => props.annotationMethods.deleteAnnotation(annotationId);
     const [editMode, setEditMode] = React.useState(false as boolean);
 
@@ -215,8 +208,13 @@ function AnnotationCard(props: any): ReactElement {
     }
 
     function saveComment(newComment: string): void {
-        props.annotationData.comment = newComment;
+        let updatedAnnotationData = annotationData;
+        updatedAnnotationData.comment = newComment;
+        setAnnotationData(updatedAnnotationData);
         setEditMode(false);
+
+        // move this to an effect to sync on any change
+        props.annotationMethods.syncSheetWithReactAnnotations();
     }
 
     return (

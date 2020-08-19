@@ -10,7 +10,7 @@ const dummyAnnotation: cTypes.annotation = ({
     created: new Date(Date.now()),
     createdString: new Date(Date.now()).toLocaleDateString(),
     colour: '',
-    userName: 'JohnnyAppleseed',
+    userName: 'Johnny Appleseed',
     userProfileURL: ''
 });
 
