@@ -6,11 +6,11 @@ import { checkNullableObject } from './shared';
 const currentOriginAndPath = window.location.origin + window.location.pathname;
 
 const blankSheet: cTypes.sheet = {
-    id: currentOriginAndPath,
+    id: '',
     active: false,
     annotations: [],
     tabId: -1,
-    url: currentOriginAndPath
+    url: ''
 };
 
 let currentSheet: cTypes.sheet;
@@ -49,7 +49,7 @@ function deactivateSheet() {
 function activateSheet(sheet: cTypes.sheet) {
     currentSheet = sheet;
 
-    if (currentSheet.url === undefined) {
+    if (currentSheet.url === '') {
         currentSheet.url = currentOriginAndPath;
     }
 
