@@ -23,7 +23,7 @@ function setupPopupControl() {
     toggle.addEventListener('click', () => {
         // Send message to backend to change active state
         const message: extensionMessage = {
-            subject: enums.chromeMessageSubject.changeSheetState,
+            subject: enums.chromeMessageSubject.popup.changeSheetState,
             attachments: {}
         };
 

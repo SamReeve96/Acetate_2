@@ -11,10 +11,10 @@
 // userProfileURL   The URL to the users profile icon (Could be moved to a separate storage location to remove duplication for each comment)
 export type annotation = {
     id: number;
+    colour: string;
     comment: string;
     created: Date;
-    createdString: string;
-    colour: string;
+    element: any;
     userName: string;
     userProfileURL: string;
 }
@@ -32,8 +32,6 @@ export type sheet = {
     id: string;
     active: boolean;
     annotations: annotation[];
-    backgroundPort: any;
-    csPort: any;
     tabId: number;
     url: string;
 }

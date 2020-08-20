@@ -8,8 +8,8 @@ const dummyAnnotation: cTypes.annotation = ({
     id: 1,
     comment: 'blam',
     created: new Date(Date.now()),
-    createdString: new Date(Date.now()).toLocaleDateString(),
     colour: '',
+    element: 'none!',
     userName: 'Johnny Appleseed',
     userProfileURL: ''
 });
@@ -52,7 +52,6 @@ function changeExtensionIcon(extensionState: boolean) {
     chrome.browserAction.setIcon({ path: icon });
 }
 
-
 function browserTabChanged(activeTab: any) {
     //Check the new active tab is a normal tab, not a popup page
     if (activeTab.tabId !== -1) {
@@ -68,10 +67,46 @@ function cacheLastActiveTab(activeTab: any) {
     lastActiveTab = activeTab;
 }
 
-chrome.tabs.onActivated.addListener((activeTab) => browserTabChanged(activeTab));
-////TODO if a tab is closed, check if the tab had an active sheet, if so save whatever is in the extension state to sync storage
-//  Then remove sheet from extension state id saved
-////Though this does mean if the app crashes or is closed without the extension still running saved data is lost?
+chrome.tabs.onActivated.addListener((activeTab) => 
+    browserTabChanged(activeTab))
+;
+
+// if tab closed remove the port
+chrome.tabs.onRemoved.addListener((tabId) => {
+    let bgPortsUpdate = bgPorts.filter((tabIdPort) => {
+        return (tabIdPort.tabId !== tabId);
+    });
+
+    bgPorts = bgPortsUpdate;
+    closePort(tabId);
+});
+
+function addControlsToContextmenu() {
+    // Create the Annotate right-click menu option (remove all and re-add to ensure it isn't duplicated)
+    chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({
+            id: enums.chromeContextMenuOptions.AnnotateElement,
+            title: 'Annotate %s',
+            contexts: ['page', 'selection', 'image', 'link']
+        });
+    });
+}
+
+function removeControlsFromContextMenu() {
+    chrome.contextMenus.removeAll();
+}
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === enums.chromeContextMenuOptions.AnnotateElement) {
+        const message: cTypes.extensionMessage = {
+            subject: enums.chromeMessageSubject.addNewAnnotation,
+            attachments: {}
+        }
+
+        sendMessage(message, true, findBgPort(lastActiveTab.tabId));
+    }
+});
+
 
 // ========================
 // Chrome messaging
@@ -91,11 +126,8 @@ function handleIncomingMessage(message) {
             break;
         case enums.chromeMessageSubject.contentScriptConnected:
             break;
-        case enums.chromeMessageSubject.cScriptDeactivated:
-            deactivateSheet(message.attachments.sheet.tabId);
-            closePort(message.attachments.sheet.tabId);
-            break;
-        case enums.chromeMessageSubject.changeSheetState:
+        //Popup wants to toggle sheet state
+        case enums.chromeMessageSubject.popup.changeSheetState:
             changeSheetState();
             break;
         case enums.chromeMessageSubject.sheetToAddOrUpdate:
@@ -116,13 +148,18 @@ type tabPort = {
 let bgPorts: tabPort[] = []
 
 function findBgPort(tabId: number): any {
-    let portToReturn = bgPorts.filter((port) => {
+    let tabPortPair = bgPorts.filter((port) => {
         return port.tabId === tabId;
     })[0];
 
-    return portToReturn.backgroundPort;
+    if (tabPortPair !== undefined) {
+        return tabPortPair.backgroundPort;
+    } else {
+        console.error('cant find a message port for this tab...');
+    }
 }
 
+// call on tab close
 function closePort(tabId: number) {
     bgPorts = bgPorts.filter(bgPort => {
         return bgPort.tabId !== tabId
@@ -164,6 +201,11 @@ function setupChromeMessaging() {
 // ========================
 // state
 // ========================
+
+////TODO if a tab is closed, check if the tab had an active sheet, if so save whatever is in the extension state to sync storage
+//  Then remove sheet from extension state id saved
+////Though this does mean if the app crashes or is closed without the extension still running saved data is lost?
+
 let state: cTypes.extensionState = {
     sheets: Array<cTypes.sheet>(),
 }
@@ -186,16 +228,6 @@ function getSheetByTabId(tabId: number) {
 
     // indexing the first of the array is bad, we need to determine what sheet to return based on the context of the sheet (url/sheet id) and ensure its only a single item
     return filteredSheets[0];
-}
-
-function changeSheetState() {
-    let sheetToChange = getSheetByTabId(lastActiveTab.tabId);
-
-    if (sheetToChange.active) {
-        deactivateSheet(sheetToChange);
-    } else {
-        activateSheet(sheetToChange.url);
-    }
 }
 
 function addOrUpdateSheet(sheet: cTypes.sheet) {
@@ -224,28 +256,38 @@ let blankSheet: cTypes.sheet = {
     id: '',
     active: false,
     annotations: [],
-    backgroundPort: undefined,
-    csPort: undefined,
     tabId: -1,
     url: ''
 };
 
-function activateSheet(url: string) {
+function changeSheetState() {
+    let sheetToChange = getSheetByTabId(lastActiveTab.tabId);
+
+    // if a new sheet or sheet isn't active on that tab
+    if (sheetToChange === undefined || !sheetToChange.active) {
+        activateSheet(sheetToChange);
+    } else {
+        deactivateSheet(sheetToChange);
+    }
+}
+
+// Url nullable if the sheet isn't in state yet
+function activateSheet(sheetToActivate?: cTypes.sheet) {
     let sheet: cTypes.sheet = blankSheet;
 
-    // check if page has a sheet in the state sheet array, if not initialise a new sheet
-    const savedSheet: cTypes.sheet = state.sheets.filter((sheet) => {
-        return sheet.url === url
-    })[0];
+    if (sheetToActivate !== undefined) {
+        // check if page has a sheet in the state sheet array, if not initialise a new sheet
+        const savedSheet: cTypes.sheet = state.sheets.filter((sheet) => {
+            return sheet.url === sheetToActivate.url
+        })[0];
 
-    if (savedSheet !== undefined) {
-        sheet = savedSheet;
+        if (savedSheet !== undefined) {
+            sheet = savedSheet;
+        }
     }
 
-    //Just for testing
-    sheet.annotations.push(dummyAnnotation);
-
-    sheet.active = true
+    sheet.active = true;
+    sheet.tabId = lastActiveTab.tabId;
 
     const message: cTypes.extensionMessage = {
         subject: enums.chromeMessageSubject.activateSheet,
@@ -256,6 +298,7 @@ function activateSheet(url: string) {
 
     sendMessage(message, true, findBgPort(lastActiveTab.tabId));
 
+    addControlsToContextmenu();
     changeExtensionIcon(sheet.active);
 }
 
@@ -273,6 +316,7 @@ function deactivateSheet(sheet: cTypes.sheet) {
 
     sendMessage(message, true, findBgPort(sheet.tabId));
 
+    removeControlsFromContextMenu();
     changeExtensionIcon(sheet.active);
 }
 
@@ -309,15 +353,12 @@ function loadSheetsFromSync() {
     });
 }
 
-
 // Save sheet data to google sync storage
 function saveStateSheetsToSync() {
     // Reset values of inactive sheets so that new ports and tabIds are assigned on reactivation
     // state.sheets.map((sheet) => {
     //     if (!sheet.active) {
     //         sheet.tabId = -1;
-    //         sheet.csPort = undefined;
-    //         sheet.backgroundPort = undefined;
     //     }
     // });
     chrome.storage.sync.set({ syncStoredSheets: state.sheets })

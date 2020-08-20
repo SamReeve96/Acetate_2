@@ -9,13 +9,12 @@ const blankSheet: cTypes.sheet = {
     id: currentOriginAndPath,
     active: false,
     annotations: [],
-    backgroundPort: undefined,
-    csPort: undefined,
     tabId: -1,
     url: currentOriginAndPath
 };
 
-let currentSheet: cTypes.sheet = blankSheet;
+let currentSheet: cTypes.sheet;
+let currentTabId: number = -1;
 
 // ========================
 // Testing
@@ -43,21 +42,20 @@ function deactivateSheet() {
     const shadowContainer = checkNullableObject(document.querySelector('#shadowContainer'));
     shadowContainer.parentNode.removeChild(shadowContainer);
 
-    const message = {
-        subject: enums.chromeMessageSubject.cScriptDeactivated,
-        attachments: {
-            sheet: currentSheet
-        }
-    }
-
-    csPort.postMessage(message);
-
     // reset sheet data
     currentSheet = blankSheet;
 }
 
 function activateSheet(sheet: cTypes.sheet) {
     currentSheet = sheet;
+
+    if (currentSheet.url === undefined) {
+        currentSheet.url = currentOriginAndPath;
+    }
+
+    currentSheet.tabId = currentTabId;
+
+    sendSheetToBackground();
 
     //Add extension elements
     checkNullableObject(document.body.insertAdjacentHTML('afterbegin',
@@ -66,6 +64,7 @@ function activateSheet(sheet: cTypes.sheet) {
 
     const shadowContainer: HTMLElement = checkNullableObject(document.querySelector('div#shadowContainer'));
     const shadow = shadowContainer.attachShadow({ mode: 'open' });
+
 
     // Render react components inside shadow dom
     ReactDOM.render(
@@ -81,6 +80,62 @@ function activateSheet(sheet: cTypes.sheet) {
     fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
         shadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
     });
+}
+
+// Must be a better way to update the state externally (see redux) but for now...
+function reloadReactComponents() {
+    // Remove content script contents
+    const oldShadowContainer = checkNullableObject(document.querySelector('#shadowContainer'));
+    oldShadowContainer.parentNode.removeChild(oldShadowContainer);
+
+    //Add extension elements
+    checkNullableObject(document.body).insertAdjacentHTML('afterbegin',
+        '<div id="shadowContainer"></div>'
+    );
+
+    const redrawnShadowContainer = checkNullableObject(document.querySelector('#shadowContainer'));
+    const newShadow = redrawnShadowContainer.attachShadow({ mode: 'open' });
+
+    // Render react components inside shadow dom
+    ReactDOM.render(
+        <CardsContainer
+            storageAnnotations={currentSheet.annotations}
+        />,
+        newShadow
+    );
+
+    // Import styling for shadow dom
+    const newShadowDiv = checkNullableObject(newShadow.querySelector('#shadowDiv'));
+    const cardsContainerCssURL = chrome.runtime.getURL('/contentScript/cardsContainer.css');
+    fetch(cardsContainerCssURL).then(response => response.text()).then(data => {
+        newShadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
+    });
+}
+
+// tracks the last element the user right-clicked on
+let contextElementType: any = undefined
+
+// Just getting element rn, but in future use this to gen an id for an element to find it again when reloading the sheet
+document.addEventListener('contextmenu', e => {
+    // @ts-ignore: does exist TS is being a pain
+    contextElementType = e.target.nodeName;
+});
+
+const addNewAnnotation = () => {
+    const newAnnotation: cTypes.annotation = {
+        id: -1,
+        colour: '',
+        comment: 'new Annotation test',
+        created: new Date(Date.now()),
+        element: contextElementType,
+        userProfileURL: '',
+        userName: 'Test Name'
+    }
+
+    currentSheet.annotations.push(newAnnotation);
+
+    reloadReactComponents();
+    sendSheetToBackground();
 }
 
 // ========================
@@ -112,9 +167,11 @@ async function handleIncomingMessage(message: cTypes.extensionMessage): Promise<
             deactivateSheet();
             break;
         case enums.chromeMessageSubject.backgroundScriptConnected:
-            currentSheet.tabId = message.attachments.tabId;
-            console.log(`tabId sent ${currentSheet.tabId}`);
-            sendSheetToBackground();
+            currentTabId = message.attachments.tabId;
+            console.log(`tabId sent ${message.attachments.tabId}`);
+            break;
+        case enums.chromeMessageSubject.addNewAnnotation:
+            addNewAnnotation();
             break;
         default:
             console.error('invalid Enum for message subject: "' + message.subject + '"');
@@ -141,28 +198,24 @@ function setupChromeMessaging() {
 // ========================
 
 function CardsContainer(props: any): ReactElement {
+    //SET ANNOTATIONS NOT WORKING????
     const [annotations, setAnnotations] = React.useState(props.storageAnnotations as cTypes.annotation[]);
 
-    const newAnnotation: cTypes.annotation = {
-        id: annotations.length,
-        comment: 'test',
-        created: new Date(Date.now()),
-        createdString: new Date(Date.now()).toLocaleDateString(),
-        colour: '',
-        userProfileURL: '',
-        userName: 'Test Name'
-    }
-
-    //Not triggering correctly right now
+    //Use effect Not triggering correctly right now
     React.useEffect(() => {
         // Update the document title using the browser API
         document.title = document.title + ` : (Acetate Active) - ${annotations.length} annotations`;
     });
 
     //When reacts state changes, sync those changes with the chrome sheet and the background sheet array
-    function syncSheetWithReactAnnotations() {
-        //Set the sheet annotations value to what react sees
-        currentSheet.annotations = annotations;
+    function syncSheetWithReactAnnotations(newAnnotations?: cTypes.annotation[]) {
+        //Set the sheet annotations value to what was changed or to the sheet if nothing provided
+        if (newAnnotations !== undefined) {
+            currentSheet.annotations = newAnnotations;
+        } else {
+            currentSheet.annotations = annotations;
+        }
+
         // update background sheet
         sendSheetToBackground();
     }
@@ -172,7 +225,7 @@ function CardsContainer(props: any): ReactElement {
         if (deleteConfirmed) {
             const annotationsClone: cTypes.annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
             setAnnotations(annotationsClone);
-            syncSheetWithReactAnnotations();
+            syncSheetWithReactAnnotations(annotationsClone);
         }
     }
 
@@ -207,6 +260,12 @@ function AnnotationCard(props: any): ReactElement {
         return matches.join('');
     }
 
+    function getAnnotationFormattedDatetime() {
+        const formattedTime = new Date(annotationData.created).toLocaleTimeString();
+        const formattedDate = new Date (annotationData.created).toLocaleDateString();
+        return `${formattedDate} ${formattedTime}`;
+    }
+
     function saveComment(newComment: string): void {
         let updatedAnnotationData = annotationData;
         updatedAnnotationData.comment = newComment;
@@ -232,7 +291,7 @@ function AnnotationCard(props: any): ReactElement {
                 <div className='cardHeader'>
                     <div className='cardTitle'>
                         <p className='username'>{annotationData.userName}</p>
-                        <p className='created'>Created: {annotationData.createdString}</p>
+                        <p className='created'>Created: {getAnnotationFormattedDatetime()}</p>
                     </div>
                     <div className='controls'>
                         <p
