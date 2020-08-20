@@ -1,6 +1,6 @@
 # Acetate
 
-[![Known Vulnerabilities](https://snyk.io/test/github/SamReeve96/Acetate/badge.svg)](https://snyk.io/test/github/SamReeve96/Acetate)
+[![Known Vulnerabilities - Non React components](https://snyk.io/test/github/SamReeve96/Acetate/badge.svg?targetFile=Extension/extensionSrc/nonReactComponents/package.json)](https://snyk.io/test/github/SamReeve96/Acetate?targetFile=Extension/extensionSrc/nonReactComponents/package.json)
 
 <p align="center">
   <img alt='Acetate logo' src="https://github.com/SamReeve96/Acetate/blob/Core/Assets/AcetateFull.png?raw=true" />
