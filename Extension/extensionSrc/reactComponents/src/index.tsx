@@ -111,14 +111,28 @@ function reloadReactComponents() {
         newShadowDiv.insertAdjacentHTML('afterbegin', `<style> ${data} </style>`);
     });
 }
+            
+// Label all elements on the page we can authenticate an element is the same as it was when created by comparing auditID and element type
+function auditContentPageElements() {
+    let elementCounter = 1;
+    const elementsToAudit = checkNullableObject(document.querySelector('body'));
+    elementsToAudit.querySelectorAll('*').forEach((element: HTMLElement) =>  {
+        element.setAttribute('acetateElementId', elementCounter.toString());
+        elementCounter++;
+    });
+}
 
 // tracks the last element the user right-clicked on
-let contextElementType: any = undefined
-
-// Just getting element rn, but in future use this to gen an id for an element to find it again when reloading the sheet
+let contextElement = {
+    elementId: -1,
+    type: 'unknown'
+}
+// Just getting element data rn, but in future use this to gen an id for an element to find it again when reloading the sheet
 document.addEventListener('contextmenu', e => {
     // @ts-ignore: does exist TS is being a pain
-    contextElementType = e.target.nodeName;
+    contextElement.type = e.target.nodeName;
+    // @ts-ignore: does exist TS is being a pain
+    contextElement.elementId = e.target.getAttribute('acetateElementId');
 });
 
 const addNewAnnotation = () => {
@@ -127,7 +141,7 @@ const addNewAnnotation = () => {
         colour: '',
         comment: 'new Annotation test',
         created: new Date(Date.now()),
-        element: contextElementType,
+        element: contextElement,
         userProfileURL: '',
         userName: 'Test Name'
     }
@@ -136,6 +150,11 @@ const addNewAnnotation = () => {
 
     reloadReactComponents();
     sendSheetToBackground();
+
+    contextElement = {
+        elementId: -1,
+        type: 'unknown'
+    }
 }
 
 // ========================
@@ -346,3 +365,4 @@ function CardIdentifier(props: any): ReactElement {
 // ========================
 
 getEnums().then(() => setupChromeMessaging());
+auditContentPageElements();

@@ -25,7 +25,7 @@ export type annotation = {
     colour: string;
     comment: string;
     created: Date;
-    element: any;
+    element: any; // make this a  custom type?
     userName: string;
     userProfileURL: string;
 }
