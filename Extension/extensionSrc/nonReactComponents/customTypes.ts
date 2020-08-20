@@ -2,6 +2,10 @@
 // sheets: an array of sheets currently in use
 export type extensionState = {
     sheets: sheet[];
+    user: {
+        colour: string;
+        userName: string;
+    }
 }
 
 export type selectedElement = {

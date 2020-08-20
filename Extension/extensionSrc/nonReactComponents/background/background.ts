@@ -67,9 +67,9 @@ function cacheLastActiveTab(activeTab: any) {
     lastActiveTab = activeTab;
 }
 
-chrome.tabs.onActivated.addListener((activeTab) => 
+chrome.tabs.onActivated.addListener((activeTab) =>
     browserTabChanged(activeTab))
-;
+    ;
 
 // if tab closed remove the port
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -206,8 +206,16 @@ function setupChromeMessaging() {
 //  Then remove sheet from extension state id saved
 ////Though this does mean if the app crashes or is closed without the extension still running saved data is lost?
 
+const staticSetColourForNow = '#4B0082';
+// NOTE: when a user updates their name, need to update all sheets in bg state to have the new username
+const staticSetNameForNow = 'Sam Reeve'
+
 let state: cTypes.extensionState = {
     sheets: Array<cTypes.sheet>(),
+    user: {
+        colour: staticSetColourForNow,
+        userName: staticSetNameForNow,
+    }
 }
 
 //Use tabID & url? to find sheets in the future
@@ -292,7 +300,9 @@ function activateSheet(sheetToActivate?: cTypes.sheet) {
     const message: cTypes.extensionMessage = {
         subject: enums.chromeMessageSubject.activateSheet,
         attachments: {
-            sheet: sheet
+            sheet: sheet,
+            userColour: state.user.colour,
+            userName: state.user.userName
         }
     }
 
@@ -347,8 +357,7 @@ function loadSheetsFromSync() {
         } else {
             syncStoredSheets.map((sheet: cTypes.sheet) => {
                 state.sheets.push(sheet);
-            }
-            );
+            });
         }
     });
 }

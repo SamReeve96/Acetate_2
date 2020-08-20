@@ -3,10 +3,8 @@ $light-glass: rgba(239, 239, 239, 0.8);
 $dark-glass: rgba(16,16,16,0.2);
 $ace-Yellow: #FFCE20;
 $transparent: rgba(0,0,0,0);
-// These will be removed when users can set their colour
-$alt1: #6c0097;
-$alt2: #ec922a;
-$alt3: #0ec28c;
+
+$defaultCardColour: #585858;
 
 // Eventually this will be user set
 $user-colour: $ace-Yellow;
