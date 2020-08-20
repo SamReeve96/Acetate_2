@@ -180,6 +180,7 @@ $RECYCLE.BIN/
 
 # Ignore custom rules
 Extension/extensionBuild/*
+.vscode
 
 # Just some files used for inspiration, nothing to see here
 LocalAssets/*

@@ -1,0 +1,18 @@
+{
+  "chromeContextMenuOptions": {
+    "AnnotateElement": "annotateElement"
+  },
+  "chromeMessageSubject": {
+    "popup": {
+      "changeSheetState": "changeSheetState"
+    },
+    "backgroundScriptConnected": "backgroundScriptConnected",
+    "contentScriptConnected": "contentScriptConnected",
+    "sheetToAddOrUpdate": "sheetToAddOrUpdate",
+    "activateSheet": "activateSheet",
+    "deactivateSheet": "deactivateSheet",
+    "cScriptDeactivated": "cScriptDeactivated",
+    "openingPort": "openingPort",
+    "addNewAnnotation": "addNewAnnotation"
+  }
+}

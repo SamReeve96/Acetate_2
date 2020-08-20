@@ -1,7 +1,9 @@
 @import './colours.scss';
 
-p {
+// prevent page CSS interfering with Acetate card design
+* {
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 100%;
 }
 
 .cardsContainer {

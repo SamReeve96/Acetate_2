@@ -12,16 +12,26 @@
     "js": [
       "/contentScript/static/js/2.chunk.js",
       "/contentScript/static/js/contentScript.js",
-      "/contentScript/static/js/main.chunk.js"]
+      "/contentScript/static/js/main.chunk.js"
+    ]
   }],
   "browser_action": {
     "default_popup": "/popup/popup.html"
   },
-  "icons": { 
+  "icons": {
     "32": "/assets/AcetateOffline_32.png",
     "64": "/assets/AcetateOffline_64.png",
     "128": "/assets/AcetateOffline_128.png"
   },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "tabs"
+  ],
   "content_security_policy": "script-src 'self' 'sha256-Cl0Cu4CYiUknLweFPydb4DTZiZrpksAW4OfQadCFhWc='; object-src 'self'",
-  "web_accessible_resources": ["/contentScript/cardsContainer.css"]
+  "web_accessible_resources": [
+    "/contentScript/cardsContainer.css",
+    "/assets/enums.json"
+  ]
 }
