@@ -55,4 +55,9 @@ echo 'Copying Popup Html...'
 cp ./extensionSrc/nonReactComponents/popup/popup.html ./extensionBuild/popup/
 echo 'Done!'
 
+# options html
+echo 'Copying options Html...'
+cp ./extensionSrc/nonReactComponents/options/options.html ./extensionBuild/options/
+echo 'Done!'
+
 echo 'build complete!'
