@@ -62,6 +62,11 @@ type extensionMessage = {
     attachments: any;
 }
 
+type tabPort = {
+    tabId: number,
+    backgroundPort: any
+}
+
 // ========================
 // Testing
 // ========================
@@ -135,12 +140,7 @@ chrome.tabs.onActivated.addListener((activeTab) =>
 
 // if tab closed remove the port
 chrome.tabs.onRemoved.addListener((tabId) => {
-    let bgPortsUpdate = state.bgPorts.filter((tabIdPort) => {
-        return (tabIdPort.tabId !== tabId);
-    });
-
-    state.bgPorts = bgPortsUpdate;
-    closePort(tabId);
+    removeTabPort(tabId);
 });
 
 function addControlsToContextmenu() {
@@ -209,11 +209,6 @@ function handleIncomingMessage(message) {
     return true;
 }
 
-type tabPort = {
-    tabId: number,
-    backgroundPort: any
-}
-
 function findBgPort(tabId: number): any {
     let tabPortPair = state.bgPorts.filter((port) => {
         return port.tabId === tabId;
@@ -226,11 +221,12 @@ function findBgPort(tabId: number): any {
     }
 }
 
-// call on tab close
-function closePort(tabId: number) {
-    state.bgPorts = state.bgPorts.filter(bgPort => {
-        return bgPort.tabId !== tabId
-    });
+function removeTabPort(tabId: number) {
+    const filteredTabPorts = state.bgPorts.filter((tabPorts) => {
+        return (tabId !== tabPorts.tabId)}
+    );
+
+    state.bgPorts = filteredTabPorts;
 }
 
 // @ts-ignore: Complains this has been declared in elsewhere but files are separate
@@ -249,6 +245,9 @@ function setupChromeMessaging() {
             console.log(`Background script received message from content script ${message.subject}`)
             handleIncomingMessage(message);
         });
+
+        // Prevent duplicate portTab pairs
+        removeTabPort(lastActiveTab.tabId);
 
         state.bgPorts.push({
             tabId: lastActiveTab.tabId,
