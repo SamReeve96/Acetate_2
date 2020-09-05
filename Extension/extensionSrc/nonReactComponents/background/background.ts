@@ -1,6 +1,7 @@
 /// extensionState: Stores the state of the extension in the backend
 // sheets: an array of sheets currently in use
 type extensionState = {
+    bgPorts: tabPort[];
     sheets: sheet[];
     user: {
         colour: string;
@@ -59,6 +60,11 @@ type sheet = {
 type extensionMessage = {
     subject: string;
     attachments: any;
+}
+
+type tabPort = {
+    tabId: number,
+    backgroundPort: any
 }
 
 // ========================
@@ -134,12 +140,7 @@ chrome.tabs.onActivated.addListener((activeTab) =>
 
 // if tab closed remove the port
 chrome.tabs.onRemoved.addListener((tabId) => {
-    let bgPortsUpdate = bgPorts.filter((tabIdPort) => {
-        return (tabIdPort.tabId !== tabId);
-    });
-
-    bgPorts = bgPortsUpdate;
-    closePort(tabId);
+    removeTabPort(tabId);
 });
 
 function addControlsToContextmenu() {
@@ -208,15 +209,8 @@ function handleIncomingMessage(message) {
     return true;
 }
 
-type tabPort = {
-    tabId: number,
-    backgroundPort: any
-}
-
-let bgPorts: tabPort[] = []
-
 function findBgPort(tabId: number): any {
-    let tabPortPair = bgPorts.filter((port) => {
+    let tabPortPair = state.bgPorts.filter((port) => {
         return port.tabId === tabId;
     })[0];
 
@@ -227,11 +221,12 @@ function findBgPort(tabId: number): any {
     }
 }
 
-// call on tab close
-function closePort(tabId: number) {
-    bgPorts = bgPorts.filter(bgPort => {
-        return bgPort.tabId !== tabId
-    });
+function removeTabPort(tabId: number) {
+    const filteredTabPorts = state.bgPorts.filter((tabPorts) => {
+        return (tabId !== tabPorts.tabId)}
+    );
+
+    state.bgPorts = filteredTabPorts;
 }
 
 // @ts-ignore: Complains this has been declared in elsewhere but files are separate
@@ -251,7 +246,10 @@ function setupChromeMessaging() {
             handleIncomingMessage(message);
         });
 
-        bgPorts.push({
+        // Prevent duplicate portTab pairs
+        removeTabPort(lastActiveTab.tabId);
+
+        state.bgPorts.push({
             tabId: lastActiveTab.tabId,
             backgroundPort: newPort
         });
@@ -275,9 +273,9 @@ function setupChromeMessaging() {
 //  Then remove sheet from extension state id saved
 ////Though this does mean if the app crashes or is closed without the extension still running saved data is lost?
 
-const staticSetColourForNow = '#4B0082';
+const DefaultColour = '#4B0082';
 // NOTE: when a user updates their name, need to update all sheets in bg state to have the new username
-const staticSetNameForNow = 'Sam Reeve'
+const DefaultUserName = 'Sam Reeve'
 
 function sendUserSettings() {
     const message: extensionMessage = {
@@ -299,11 +297,12 @@ function updateUserSettings(userSettings) {
 }
 
 let state: extensionState = {
+    bgPorts: [],
     sheets: Array<sheet>(),
     user: {
-        colour: staticSetColourForNow,
-        userName: staticSetNameForNow,
-    }
+        colour: DefaultColour,
+        userName: DefaultUserName,
+    },
 }
 
 //Use tabID & url? to find sheets in the future
