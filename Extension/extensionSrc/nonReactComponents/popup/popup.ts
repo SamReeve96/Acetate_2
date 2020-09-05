@@ -1,4 +1,13 @@
-import { extensionMessage } from '../customTypes';
+/// extensionMessage:   An object to make messages between components of the extension consistent
+// subject:             A enum string that informs the recipient what to do
+// attachments:         If the subject task requires arguments, they can be sent as attachments
+
+// @ts-ignore: Complains this has been declared in background but files are separate
+type extensionMessage = {
+    subject: string;
+    attachments: any;
+}
+
 
 // ========================
 // General functions

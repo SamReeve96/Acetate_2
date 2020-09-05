@@ -55,6 +55,7 @@
     "style-loader": "^0.23.1",
     "terser-webpack-plugin": "^2.3.6",
     "ts-pnp": "1.1.6",
+    "typescript": "^4.0.2",
     "url-loader": "^2.3.0",
     "webpack": "^4.42.0",
     "webpack-dev-server": "^3.11.0",
@@ -64,6 +65,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "GENERATE_SOURCEMAP=false node scripts/build.js",
+    "winBuild": "set \"GENERATE_SOURCEMAP=false\" && node scripts/build.js",
     "test": "node scripts/test.js",
     "lint-tsx": "eslint . --ext .tsx",
     "lint-tsx-fix": "eslint . --ext .tsx --fix",

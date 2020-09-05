@@ -23,6 +23,7 @@
     "64": "/assets/AcetateOffline_64.png",
     "128": "/assets/AcetateOffline_128.png"
   },
+  "options_page": "options/options.html",
   "permissions": [
     "activeTab",
     "contextMenus",

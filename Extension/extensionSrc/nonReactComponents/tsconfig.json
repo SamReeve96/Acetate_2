@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "esnext",
+    "module": "none",
     "sourceMap": false,
     "outDir": "../../extensionBuild/"
   },
   "lib": [
-    "esnext"
   ],
   "include": [
     "background",
+    "options",
     "popup"
   ],
   "types": [

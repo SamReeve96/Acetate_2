@@ -6,12 +6,18 @@ import { checkNullableObject } from './shared';
 const currentOriginAndPath = window.location.origin + window.location.pathname;
 
 const blankSheet: cTypes.sheet = {
-    id: currentOriginAndPath,
+    id: '',
     active: false,
     annotations: [],
     tabId: -1,
-    url: currentOriginAndPath
+    url: ''
 };
+
+let user = {
+    colour: '',
+    name: '? Unknown',
+    profileImageUrl: ''
+}
 
 let currentSheet: cTypes.sheet;
 let currentTabId: number = -1;
@@ -46,14 +52,27 @@ function deactivateSheet() {
     currentSheet = blankSheet;
 }
 
+// update all the annotation cards the user owns to the colour they set in settings (may have changed since last load)
+// Feel like this is something redux would make redundant, but here we are!
+function updateUserAnnotationAttributes(annotations: cTypes.annotation[]): cTypes.annotation[] {
+    annotations.map((annotation: cTypes.annotation) => {
+        annotation.colour = user.colour;
+        annotation.userName = user.name;
+    });
+
+    return annotations;
+}
+
 function activateSheet(sheet: cTypes.sheet) {
     currentSheet = sheet;
 
-    if (currentSheet.url === undefined) {
+    if (currentSheet.url === '') {
         currentSheet.url = currentOriginAndPath;
     }
 
     currentSheet.tabId = currentTabId;
+
+    currentSheet.annotations = updateUserAnnotationAttributes(currentSheet.annotations);
 
     sendSheetToBackground();
 
@@ -138,12 +157,12 @@ document.addEventListener('contextmenu', e => {
 const addNewAnnotation = () => {
     const newAnnotation: cTypes.annotation = {
         id: -1,
-        colour: '',
+        colour: user.colour,
         comment: 'new Annotation test',
         created: new Date(Date.now()),
         element: contextElement,
-        userProfileURL: '',
-        userName: 'Test Name'
+        userProfileURL: user.profileImageUrl,
+        userName: user.name
     }
 
     currentSheet.annotations.push(newAnnotation);
@@ -180,6 +199,8 @@ function sendSheetToBackground() {
 async function handleIncomingMessage(message: cTypes.extensionMessage): Promise<boolean> {
     switch (message.subject) {
         case enums.chromeMessageSubject.activateSheet:
+            user.colour = message.attachments.userColour;
+            user.name = message.attachments.userName;
             activateSheet(message.attachments.sheet);
             break;
         case enums.chromeMessageSubject.deactivateSheet:
@@ -220,14 +241,18 @@ function CardsContainer(props: any): ReactElement {
     //SET ANNOTATIONS NOT WORKING????
     const [annotations, setAnnotations] = React.useState(props.storageAnnotations as cTypes.annotation[]);
 
-    //Use effect Not triggering correctly right now
     React.useEffect(() => {
         // Update the document title using the browser API
-        document.title = document.title + ` : (Acetate Active) - ${annotations.length} annotations`;
-    });
+        document.title = `${annotations.length} annotations`;
+    }, [document.title, annotations.length])
+
+    // update Sheet annotations with React state's annotations
+    React.useEffect(() => {
+        applyReactStateToExtensionSheet(annotations);
+    }, [annotations])
 
     //When reacts state changes, sync those changes with the chrome sheet and the background sheet array
-    function syncSheetWithReactAnnotations(newAnnotations?: cTypes.annotation[]) {
+    function applyReactStateToExtensionSheet(newAnnotations?: cTypes.annotation[]) {
         //Set the sheet annotations value to what was changed or to the sheet if nothing provided
         if (newAnnotations !== undefined) {
             currentSheet.annotations = newAnnotations;
@@ -244,7 +269,7 @@ function CardsContainer(props: any): ReactElement {
         if (deleteConfirmed) {
             const annotationsClone: cTypes.annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
             setAnnotations(annotationsClone);
-            syncSheetWithReactAnnotations(annotationsClone);
+            // applyReactStateToExtensionSheet(annotationsClone);
         }
     }
 
@@ -253,7 +278,7 @@ function CardsContainer(props: any): ReactElement {
             <AnnotationCard
                 key={annotation.id}
                 annotationData={annotation}
-                annotationMethods={{ syncSheetWithReactAnnotations, deleteAnnotation }}
+                annotationMethods={{ applyReactStateToExtensionSheet, deleteAnnotation }}
             />
         )
     })
@@ -273,10 +298,18 @@ function AnnotationCard(props: any): ReactElement {
     const deleteAnnotation = (annotationId: number): void => props.annotationMethods.deleteAnnotation(annotationId);
     const [editMode, setEditMode] = React.useState(false as boolean);
 
+    function hasWhiteSpace(string: string) {
+        return /\s/g.test(string);
+      }
+
     function extractInitials(): string {
         const userName = annotationData.userName;
-        const matches = checkNullableObject(userName.match(/\b(\w)/g));
-        return matches.join('');
+        if (hasWhiteSpace(userName)) {
+            const matches = checkNullableObject(userName.match(/\b(\w)/g));
+            return matches.join('');
+        }
+
+        return userName;
     }
 
     function getAnnotationFormattedDatetime() {
@@ -292,7 +325,7 @@ function AnnotationCard(props: any): ReactElement {
         setEditMode(false);
 
         // move this to an effect to sync on any change
-        props.annotationMethods.syncSheetWithReactAnnotations();
+        props.annotationMethods.applyReactStateToExtensionSheet();
     }
 
     return (

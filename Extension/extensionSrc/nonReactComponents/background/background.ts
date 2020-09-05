@@ -1,10 +1,71 @@
-import * as cTypes from '../customTypes';
+/// extensionState: Stores the state of the extension in the backend
+// sheets: an array of sheets currently in use
+type extensionState = {
+    sheets: sheet[];
+    user: {
+        colour: string;
+        userName: string;
+    }
+}
+
+type selectedElement = {
+    type: string,
+    auditId: number
+}
+
+// ========================
+// Clone from the react customTypes.ts file both should be kept identical from this point
+// ========================
+
+/// annotation:     The object to store annotation information
+// id:              Id of the annotation (will be assigned by some UUID generator when implemented)
+// comment:         What the user commented about an element
+// created:         DateTime of Creation
+// colour:          Colour the annotation card should be (inherited by creator chosen colour)
+// userName:        The username that created the comment
+// userProfileURL   The URL to the users profile icon (Could be moved to a separate storage location to remove duplication for each comment)
+type annotation = {
+    id: number;
+    colour: string;
+    comment: string;
+    created: Date;
+    element: any; // make this a  custom type?
+    userName: string;
+    userProfileURL: string;
+}
+
+/// Sheet:          The object to store all information
+///                 about an instance of an annotated page
+// id:              The Sheets ID, (will be assigned by some UUID generator when implemented)
+// active:          A flag indicating if the sheet currently active on a tab
+// annotations:     An array of annotation objects
+// backgroundPort:  The port object the bg script uses to communicate with the tab with the currently open sheet
+// csPort:          The port object the cs script uses to communicate with the background script
+// tabId:           The id of the Tab the sheet is active on
+// url:             The url of the page being annotated
+type sheet = {
+    id: string;
+    active: boolean;
+    annotations: annotation[];
+    tabId: number;
+    url: string;
+}
+
+/// extensionMessage:   An object to make messages between components of the extension consistent
+// subject:             A enum string that informs the recipient what to do
+// attachments:         If the subject task requires arguments, they can be sent as attachments
+
+// @ts-ignore: Complains this has been declared in background but files are separate
+type extensionMessage = {
+    subject: string;
+    attachments: any;
+}
 
 // ========================
 // Testing
 // ========================
 
-const dummyAnnotation: cTypes.annotation = ({
+const dummyAnnotation: annotation = ({
     id: 1,
     comment: 'blam',
     created: new Date(Date.now()),
@@ -67,9 +128,9 @@ function cacheLastActiveTab(activeTab: any) {
     lastActiveTab = activeTab;
 }
 
-chrome.tabs.onActivated.addListener((activeTab) => 
+chrome.tabs.onActivated.addListener((activeTab) =>
     browserTabChanged(activeTab))
-;
+    ;
 
 // if tab closed remove the port
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -98,7 +159,7 @@ function removeControlsFromContextMenu() {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === enums.chromeContextMenuOptions.AnnotateElement) {
-        const message: cTypes.extensionMessage = {
+        const message: extensionMessage = {
             subject: enums.chromeMessageSubject.addNewAnnotation,
             attachments: {}
         }
@@ -112,7 +173,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Chrome messaging
 // ========================
 
-function sendMessage(message: cTypes.extensionMessage, toContentScript: boolean, recipientPort?: any) {
+function sendMessage(message: extensionMessage, toContentScript: boolean, recipientPort?: any) {
     if (toContentScript) {
         recipientPort.postMessage(message);
     } else {
@@ -120,6 +181,7 @@ function sendMessage(message: cTypes.extensionMessage, toContentScript: boolean,
     }
 }
 
+// @ts-ignore: Complains this has been declared in other non react parts but files are separate
 function handleIncomingMessage(message) {
     switch (message.subject) {
         case enums.chromeMessageSubject.openingPort:
@@ -132,6 +194,12 @@ function handleIncomingMessage(message) {
             break;
         case enums.chromeMessageSubject.sheetToAddOrUpdate:
             addOrUpdateSheet(message.attachments.sheet);
+            break;
+        case enums.chromeMessageSubject.options.requestUserSettings:
+            sendUserSettings();
+            break;
+        case enums.chromeMessageSubject.options.updateUserSettings:
+            updateUserSettings(message.attachments);
             break;
         default:
             console.error('invalid Enum for message subject: "' + message.subject + '"');
@@ -166,6 +234,7 @@ function closePort(tabId: number) {
     });
 }
 
+// @ts-ignore: Complains this has been declared in elsewhere but files are separate
 function setupChromeMessaging() {
     // Setup contentScript messaging port
     chrome.runtime.onConnect.addListener(function (newPort: any) {
@@ -177,7 +246,7 @@ function setupChromeMessaging() {
             }
         });
 
-        newPort.onMessage.addListener(function (message: cTypes.extensionMessage) {
+        newPort.onMessage.addListener(function (message: extensionMessage) {
             console.log(`Background script received message from content script ${message.subject}`)
             handleIncomingMessage(message);
         });
@@ -206,8 +275,35 @@ function setupChromeMessaging() {
 //  Then remove sheet from extension state id saved
 ////Though this does mean if the app crashes or is closed without the extension still running saved data is lost?
 
-let state: cTypes.extensionState = {
-    sheets: Array<cTypes.sheet>(),
+const staticSetColourForNow = '#4B0082';
+// NOTE: when a user updates their name, need to update all sheets in bg state to have the new username
+const staticSetNameForNow = 'Sam Reeve'
+
+function sendUserSettings() {
+    const message: extensionMessage = {
+        subject: enums.chromeMessageSubject.options.applyUserSettings,
+        attachments: {
+            userColour: state.user.colour,
+            userName: state.user.userName
+        }
+    }
+
+    sendMessage(message, true, findBgPort(lastActiveTab.tabId));
+}
+
+function updateUserSettings(userSettings) {
+    state.user.userName = userSettings.userName;
+    state.user.colour = userSettings.userColour;
+
+    // extra work: iterate over the current active tabs and send a message to update the colour of the user tabs to the new values
+}
+
+let state: extensionState = {
+    sheets: Array<sheet>(),
+    user: {
+        colour: staticSetColourForNow,
+        userName: staticSetNameForNow,
+    }
 }
 
 //Use tabID & url? to find sheets in the future
@@ -230,7 +326,7 @@ function getSheetByTabId(tabId: number) {
     return filteredSheets[0];
 }
 
-function addOrUpdateSheet(sheet: cTypes.sheet) {
+function addOrUpdateSheet(sheet: sheet) {
     //Check if the sheet exists in the state if not add, otherwise update
     // Again, hate that url is being used, but works for now
     if (getSheetByUrl(sheet.url) !== undefined) {
@@ -252,7 +348,7 @@ function addOrUpdateSheet(sheet: cTypes.sheet) {
     saveStateSheetsToSync();
 }
 
-let blankSheet: cTypes.sheet = {
+let blankSheet: sheet = {
     id: '',
     active: false,
     annotations: [],
@@ -272,12 +368,12 @@ function changeSheetState() {
 }
 
 // Url nullable if the sheet isn't in state yet
-function activateSheet(sheetToActivate?: cTypes.sheet) {
-    let sheet: cTypes.sheet = blankSheet;
+function activateSheet(sheetToActivate?: sheet) {
+    let sheet: sheet = blankSheet;
 
     if (sheetToActivate !== undefined) {
         // check if page has a sheet in the state sheet array, if not initialise a new sheet
-        const savedSheet: cTypes.sheet = state.sheets.filter((sheet) => {
+        const savedSheet: sheet = state.sheets.filter((sheet) => {
             return sheet.url === sheetToActivate.url
         })[0];
 
@@ -289,10 +385,12 @@ function activateSheet(sheetToActivate?: cTypes.sheet) {
     sheet.active = true;
     sheet.tabId = lastActiveTab.tabId;
 
-    const message: cTypes.extensionMessage = {
+    const message: extensionMessage = {
         subject: enums.chromeMessageSubject.activateSheet,
         attachments: {
-            sheet: sheet
+            sheet: sheet,
+            userColour: state.user.colour,
+            userName: state.user.userName
         }
     }
 
@@ -302,14 +400,14 @@ function activateSheet(sheetToActivate?: cTypes.sheet) {
     changeExtensionIcon(sheet.active);
 }
 
-function deactivateSheet(sheet: cTypes.sheet) {
+function deactivateSheet(sheet: sheet) {
     let sheetToDeactivate = getSheetByTabId(sheet.tabId);
 
     sheetToDeactivate.active = false
 
     addOrUpdateSheet(sheetToDeactivate);
 
-    const message: cTypes.extensionMessage = {
+    const message: extensionMessage = {
         subject: enums.chromeMessageSubject.deactivateSheet,
         attachments: {}
     }
@@ -345,10 +443,9 @@ function loadSheetsFromSync() {
             // initialise default option state
             chrome.storage.sync.set({ syncStoredSheets: [] })
         } else {
-            syncStoredSheets.map((sheet: cTypes.sheet) => {
+            syncStoredSheets.map((sheet: sheet) => {
                 state.sheets.push(sheet);
-            }
-            );
+            });
         }
     });
 }

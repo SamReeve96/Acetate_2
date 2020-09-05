@@ -6,6 +6,11 @@
     "popup": {
       "changeSheetState": "changeSheetState"
     },
+    "options": {
+      "requestUserSettings": "requestUserSettings",
+      "applyUserSettings": "applyUserSettings",
+      "updateUserSettings": "updateUserSettings"
+    },
     "backgroundScriptConnected": "backgroundScriptConnected",
     "contentScriptConnected": "contentScriptConnected",
     "sheetToAddOrUpdate": "sheetToAddOrUpdate",
