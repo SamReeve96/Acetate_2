@@ -181,6 +181,7 @@ function sendMessage(message: extensionMessage, toContentScript: boolean, recipi
     }
 }
 
+// @ts-ignore: Complains this has been declared in other non react parts but files are separate
 function handleIncomingMessage(message) {
     switch (message.subject) {
         case enums.chromeMessageSubject.openingPort:
@@ -193,6 +194,12 @@ function handleIncomingMessage(message) {
             break;
         case enums.chromeMessageSubject.sheetToAddOrUpdate:
             addOrUpdateSheet(message.attachments.sheet);
+            break;
+        case enums.chromeMessageSubject.options.requestUserSettings:
+            sendUserSettings();
+            break;
+        case enums.chromeMessageSubject.options.updateUserSettings:
+            updateUserSettings(message.attachments);
             break;
         default:
             console.error('invalid Enum for message subject: "' + message.subject + '"');
@@ -227,6 +234,7 @@ function closePort(tabId: number) {
     });
 }
 
+// @ts-ignore: Complains this has been declared in elsewhere but files are separate
 function setupChromeMessaging() {
     // Setup contentScript messaging port
     chrome.runtime.onConnect.addListener(function (newPort: any) {
@@ -270,6 +278,25 @@ function setupChromeMessaging() {
 const staticSetColourForNow = '#4B0082';
 // NOTE: when a user updates their name, need to update all sheets in bg state to have the new username
 const staticSetNameForNow = 'Sam Reeve'
+
+function sendUserSettings() {
+    const message: extensionMessage = {
+        subject: enums.chromeMessageSubject.options.applyUserSettings,
+        attachments: {
+            userColour: state.user.colour,
+            userName: state.user.userName
+        }
+    }
+
+    sendMessage(message, true, findBgPort(lastActiveTab.tabId));
+}
+
+function updateUserSettings(userSettings) {
+    state.user.userName = userSettings.userName;
+    state.user.colour = userSettings.userColour;
+
+    // extra work: iterate over the current active tabs and send a message to update the colour of the user tabs to the new values
+}
 
 let state: extensionState = {
     sheets: Array<sheet>(),
