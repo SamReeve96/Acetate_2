@@ -241,14 +241,18 @@ function CardsContainer(props: any): ReactElement {
     //SET ANNOTATIONS NOT WORKING????
     const [annotations, setAnnotations] = React.useState(props.storageAnnotations as cTypes.annotation[]);
 
-    //Use effect Not triggering correctly right now
     React.useEffect(() => {
         // Update the document title using the browser API
-        document.title = document.title + ` : (Acetate Active) - ${annotations.length} annotations`;
-    });
+        document.title = `${annotations.length} annotations`;
+    }, [document.title, annotations.length])
+
+    // update Sheet annotations with React state's annotations
+    React.useEffect(() => {
+        applyReactStateToExtensionSheet(annotations);
+    }, [annotations])
 
     //When reacts state changes, sync those changes with the chrome sheet and the background sheet array
-    function syncSheetWithReactAnnotations(newAnnotations?: cTypes.annotation[]) {
+    function applyReactStateToExtensionSheet(newAnnotations?: cTypes.annotation[]) {
         //Set the sheet annotations value to what was changed or to the sheet if nothing provided
         if (newAnnotations !== undefined) {
             currentSheet.annotations = newAnnotations;
@@ -265,7 +269,7 @@ function CardsContainer(props: any): ReactElement {
         if (deleteConfirmed) {
             const annotationsClone: cTypes.annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
             setAnnotations(annotationsClone);
-            syncSheetWithReactAnnotations(annotationsClone);
+            // applyReactStateToExtensionSheet(annotationsClone);
         }
     }
 
@@ -274,7 +278,7 @@ function CardsContainer(props: any): ReactElement {
             <AnnotationCard
                 key={annotation.id}
                 annotationData={annotation}
-                annotationMethods={{ syncSheetWithReactAnnotations, deleteAnnotation }}
+                annotationMethods={{ applyReactStateToExtensionSheet, deleteAnnotation }}
             />
         )
     })
@@ -321,7 +325,7 @@ function AnnotationCard(props: any): ReactElement {
         setEditMode(false);
 
         // move this to an effect to sync on any change
-        props.annotationMethods.syncSheetWithReactAnnotations();
+        props.annotationMethods.applyReactStateToExtensionSheet();
     }
 
     return (
