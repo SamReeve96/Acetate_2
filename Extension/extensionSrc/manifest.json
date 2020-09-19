@@ -11,7 +11,7 @@
     "css": ["/contentScript/content.css"],
     "js": [
       "/contentScript/static/js/2.chunk.js",
-      "/contentScript/static/js/contentScript.js",
+      "/contentScript/static/js/bundle.js",
       "/contentScript/static/js/main.chunk.js"
     ]
   }],
