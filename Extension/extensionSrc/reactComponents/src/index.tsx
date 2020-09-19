@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
 import * as cTypes from './customTypes';
 import { checkNullableObject } from './shared';
+import {v4 as uuid} from "uuid";
 
 const currentOriginAndPath = window.location.origin + window.location.pathname;
 
@@ -155,8 +156,9 @@ document.addEventListener('contextmenu', e => {
 });
 
 const addNewAnnotation = () => {
+    const newID = uuid();
     const newAnnotation: cTypes.annotation = {
-        id: -1,
+        id: newID,
         colour: user.colour,
         comment: 'new Annotation test',
         created: new Date(Date.now()),
@@ -264,7 +266,7 @@ function CardsContainer(props: any): ReactElement {
         sendSheetToBackground();
     }
 
-    function deleteAnnotation(annotationId: number): void {
+    function deleteAnnotation(annotationId: string): void {
         const deleteConfirmed: boolean = window.confirm('Are you sure you want to delete this annotation?');
         if (deleteConfirmed) {
             const annotationsClone: cTypes.annotation[] = annotations.filter(annotation => annotation.id !== annotationId);
