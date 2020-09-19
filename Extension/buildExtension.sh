@@ -1,5 +1,25 @@
 #You may need to run the command 'chmod +x buildExtension.sh' to give this script permissions to execute first!
 
+os=${OSTYPE//[0-9.-]*/}
+
+case "$os" in
+    darwin)
+    echo "Running on MacOS"
+    ;;
+
+    msys)
+    echo "Running on Windows using git bash"
+    ;;
+
+    linux)
+    echo "Running on Linux"
+    ;;
+    *)
+
+    echo "Unknown Operating system $OSTYPE"
+    exit 1
+esac
+
 #!/bin/bash
 
 ## Clear previous build dir
@@ -16,7 +36,18 @@ echo 'Building content script react app...'
 
 # run create react app to build the content script
 cd ./extensionSrc/reactComponents/
-npm run build
+
+case "$os" in
+darwin)
+    npm run build
+    ;;
+linux)
+    npm run build
+    ;;
+msys)
+    npm run winBuild
+    ;;
+esac
 
 # Move build contents to extension folder
 mv ./build ../../extensionBuild/contentScript
