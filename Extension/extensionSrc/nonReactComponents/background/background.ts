@@ -26,7 +26,7 @@ type selectedElement = {
 // userName:        The username that created the comment
 // userProfileURL   The URL to the users profile icon (Could be moved to a separate storage location to remove duplication for each comment)
 type annotation = {
-    id: number;
+    id: string;
     colour: string;
     comment: string;
     created: Date;
@@ -72,7 +72,7 @@ type tabPort = {
 // ========================
 
 const dummyAnnotation: annotation = ({
-    id: 1,
+    id: "1",
     comment: 'blam',
     created: new Date(Date.now()),
     colour: '',

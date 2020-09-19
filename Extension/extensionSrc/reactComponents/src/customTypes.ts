@@ -10,7 +10,7 @@
 // userName:        The username that created the comment
 // userProfileURL   The URL to the users profile icon (Could be moved to a separate storage location to remove duplication for each comment)
 export type annotation = {
-    id: number;
+    id: string;
     colour: string;
     comment: string;
     created: Date;
