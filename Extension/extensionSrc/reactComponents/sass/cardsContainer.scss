@@ -15,19 +15,20 @@
     right: -355px;
     top: 0px;
     width: 400px;
-    z-index: 9001;
-
+    
     .annotationCard {
-        background-color: $defaultCardColour;
-        border-radius: 5px;
+        // min-height: 85px;
+
         color: #ffffff;
         display: flex;
-        filter: opacity(0.5);
+        filter: opacity(0.95);
         flex-direction: row;
-        margin-bottom: 5px;
+        height: 30px;
+        margin: unset;
+        max-width: unset;
         max-width: 100%;
-        min-height: 85px;
-        padding: 5px 5px 5px 0;;
+        padding: unset;
+        position: absolute;
         transition: all 0.25s ease-in-out;
         /** Chrome & Safari **/
         -webkit-transition: all 0.25s ease-in-out;
@@ -35,27 +36,36 @@
         -moz-transition: all 0.25s ease-in-out;
         /** Opera **/
         -o-transition: all 0.25s ease-in-out;
+        width: 380px;
 
         .userID {
-            flex: 1.2;
+            background-color: $ace-Yellow;
+            height: 30px;
+            border-radius: 5px;
+            margin-right: -10px;
+            padding-right: 10px;
+            width: 45px;
 
             .initials {
-                background-color: rgba(239, 239, 239, 0.3);
-                border-radius: 5px;
                 font-family: sans-serif;
                 font-size: 1em;
                 font-style: italic;
                 height: 1em;
-                padding: 5px;
-                margin: auto 7px;
+                line-height: 30px;
+                margin: 0;
                 text-align: center;
             }
         }
 
         .cardMain {
+            background-color: $ace-Yellow;
+            border-radius: 5px;
             display: flex;
             flex: 9;
             flex-direction: column;
+            min-height: 85px;
+            padding: 5px;
+            padding-left: 10px;;
 
             .cardHeader {
                 display: flex;
@@ -129,15 +139,15 @@
     .annotationCard.out,
     .annotationCard:hover,
     .annotationCard.edit {
-        background-color: $ace-Yellow;
         filter: drop-shadow(0px 3px 5px #000000);
         filter: opacity(1);
-        transform: translate(-355px, 0);
+        transform: translate(-335px, 0);
         /** Chrome & Safari **/
-        -webkit-transform: translate(-355px, 0);
+        -webkit-transform: translate(-335px, 0);
         /** Opera **/
-        -o-transform: translate(-355px, 0);
+        -o-transform: translate(-335px, 0);
         /** Firefox **/
-        -moz-transform: translate(-355px, 0);
+        -moz-transform: translate(-335px, 0);
+        z-index: 1000000 !important; /** Lets make sure this is the last important I use ;) **/
     }
 }

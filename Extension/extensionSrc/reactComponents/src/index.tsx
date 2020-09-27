@@ -57,8 +57,10 @@ function deactivateSheet() {
 // Feel like this is something redux would make redundant, but here we are!
 function updateUserAnnotationAttributes(annotations: cTypes.annotation[]): cTypes.annotation[] {
     annotations.map((annotation: cTypes.annotation) => {
-        annotation.colour = user.colour;
-        annotation.userName = user.name;
+        if (annotation !== null) {
+            annotation.colour = user.colour;
+            annotation.userName = user.name;
+        }
     });
 
     return annotations;
@@ -74,6 +76,10 @@ function activateSheet(sheet: cTypes.sheet) {
     currentSheet.tabId = currentTabId;
 
     currentSheet.annotations = updateUserAnnotationAttributes(currentSheet.annotations);
+
+    if (currentSheet.annotations.length === 0) {
+        calcPageSlots();
+    }
 
     sendSheetToBackground();
 
@@ -142,17 +148,71 @@ function auditContentPageElements() {
     });
 }
 
-// tracks the last element the user right-clicked on
-let contextElement = {
-    elementId: -1,
-    type: 'unknown'
+type selectedElement = {
+    auditId: number,
+    type: string,
+    yPosition: number
 }
+
+// tracks the last element the user right-clicked on
+let contextElement: selectedElement = {
+    auditId: -1,
+    type: 'unknown',
+    yPosition: -1
+}
+
+let cardHeight = 30;
+
+function calcPageSlots() {
+    let slotCount =  (document.documentElement.scrollHeight / cardHeight) >> 0;
+    currentSheet.annotations = new Array<cTypes.annotation>(slotCount);
+}
+
+// Based on: http://www.quirksmode.org/js/findpos.html
+// finds the height of an element passsed
+function getCumulativeOffset(obj: any) {
+    debugger
+    let top;
+    top = 0;
+    if (obj.offsetParent) {
+        do {
+            top  += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+    }
+    return top
+};
+
+function calcSlotPosition(obj: any) {
+    let actualHeight = getCumulativeOffset(obj);
+
+    let slotNum = (actualHeight/cardHeight) >> 0;
+
+    // determine if the closest slot if full, if so move down to the next avalible slot
+    let spotFound = false;
+
+    while (!spotFound) {
+        // if slot isnt taken, add it
+        if (!currentSheet.annotations[slotNum]) {
+            currentSheet.annotations[slotNum] !== null;
+            spotFound = true;
+            return slotNum;
+        }
+        //else, move down to the next slot
+        else {
+            slotNum++;
+        }
+    }
+}
+
 // Just getting element data rn, but in future use this to gen an id for an element to find it again when reloading the sheet
 document.addEventListener('contextmenu', e => {
+    const element = checkNullableObject(e.target)
     // @ts-ignore: does exist TS is being a pain
-    contextElement.type = e.target.nodeName;
+    contextElement.auditId = element.getAttribute('acetateElementId');
     // @ts-ignore: does exist TS is being a pain
-    contextElement.elementId = e.target.getAttribute('acetateElementId');
+    contextElement.type = element.nodeName;
+    // @ts-ignore: does exist TS is being a pain
+    contextElement.yPosition = calcSlotPosition(element); //update yPos name
 });
 
 const addNewAnnotation = () => {
@@ -167,14 +227,15 @@ const addNewAnnotation = () => {
         userName: user.name
     }
 
-    currentSheet.annotations.push(newAnnotation);
+    currentSheet.annotations[contextElement.yPosition] = (newAnnotation);
 
     reloadReactComponents();
     sendSheetToBackground();
 
     contextElement = {
-        elementId: -1,
-        type: 'unknown'
+        auditId: -1,
+        type: 'unknown',
+        yPosition: -1
     }
 }
 
@@ -276,13 +337,15 @@ function CardsContainer(props: any): ReactElement {
     }
 
     const cards = annotations.map((annotation) => {
-        return (
-            <AnnotationCard
-                key={annotation.id}
-                annotationData={annotation}
-                annotationMethods={{ applyReactStateToExtensionSheet, deleteAnnotation }}
-            />
-        )
+        if (annotation !== null) {
+            return (
+                <AnnotationCard
+                    key={annotation.id}
+                    annotationData={annotation}
+                    annotationMethods={{ applyReactStateToExtensionSheet, deleteAnnotation }}
+                />
+            )
+        }
     })
 
     return (
@@ -333,15 +396,28 @@ function AnnotationCard(props: any): ReactElement {
     return (
         <li
             className={`annotationCard ${editMode ? 'edit' : ''}`}
-            style={{ backgroundColor: `${annotationData.colour}` }}
+            style={{
+                position: "absolute",
+                top: annotationData.element.yPosition * cardHeight,
+                zIndex: 10000 + annotationData.element.yPosition
+            }}
         >
-            <div className='userID'>
+            <div className='userID'
+                style={{
+                    backgroundColor: annotationData.colour
+                }}
+            >
                 <CardIdentifier
                     userProfileURL={annotationData.userProfileURL}
                     userInitials={extractInitials()}
                 />
             </div>
-            <div className='cardMain'>
+            <div 
+                className='cardMain'
+                style={{
+                    backgroundColor: annotationData.colour
+                }}
+            >
                 <div className='cardHeader'>
                     <div className='cardTitle'>
                         <p className='username'>{annotationData.userName}</p>
