@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "none",
+    "moduleResolution": "node",
     "sourceMap": false,
     "outDir": "../../extensionBuild/"
   },
@@ -16,6 +17,9 @@
     "chrome"
   ],
   "exclude": [
-    "node_modules"
-  ]
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./node_modules/@babel/*",
+  ],
 }

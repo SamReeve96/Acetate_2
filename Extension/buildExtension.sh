@@ -20,7 +20,20 @@ case "$os" in
     exit 1
 esac
 
-#!/bin/bash
+# Get necessary npm stuffs
+echo 'Getting NPM modules'
+cd ./extensionSrc/reactComponents
+npm i
+cd ../nonReactComponents
+# npm i
+cd ../../
+
+echo 'Installing Sass Globally'
+npm install -g sass
+
+#Round two one day....https://github.com/Microsoft/TypeScript/issues/6387
+echo 'Installing typescript Globally'
+npm i -g typescript
 
 ## Clear previous build dir
 echo 'Cleaing directory...'
@@ -35,7 +48,7 @@ echo 'Building content script react app...'
 ## If it fails it should halt - https://stackoverflow.com/questions/40146746/how-to-make-batch-file-stop-when-command-fails
 
 # run create react app to build the content script
-cd ./extensionSrc/reactComponents/
+cd ./extensionSrc/reactComponents
 
 case "$os" in
 darwin)
