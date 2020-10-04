@@ -9,17 +9,12 @@ type extensionState = {
     }
 }
 
-type selectedElement = {
-    type: string,
-    auditId: number
-}
-
 // ========================
 // Clone from the react customTypes.ts file both should be kept identical from this point
 // ========================
 
 /// annotation:     The object to store annotation information
-// id:              Id of the annotation (will be assigned by some UUID generator when implemented)
+// id:              Id of the annotation
 // comment:         What the user commented about an element
 // created:         DateTime of Creation
 // colour:          Colour the annotation card should be (inherited by creator chosen colour)
@@ -32,7 +27,7 @@ type annotation = {
     created: Date;
     element: any; // make this a  custom type?
     userName: string;
-    userProfileURL: string;
+    userProfileURL: string;    
 }
 
 /// Sheet:          The object to store all information

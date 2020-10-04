@@ -2,6 +2,12 @@
 // Clone from the react customTypes.ts file both should be kept identical from this point
 // ========================
 
+type selectedElement = {
+    auditId: number,
+    type: string,
+    yPosition: number
+}
+
 /// annotation:     The object to store annotation information
 // id:              Id of the annotation (will be assigned by some UUID generator when implemented)
 // comment:         What the user commented about an element
@@ -14,7 +20,7 @@ export type annotation = {
     colour: string;
     comment: string;
     created: Date;
-    element: any;
+    element: selectedElement;
     userName: string;
     userProfileURL: string;
 }
